@@ -120,8 +120,14 @@ const createLineObj = async (orderObj, stockItems) => {
 }
 
 app.post('/createInv', function(req, res) {
-  createInvoice(JSON.parse(req))
-  res.send("success?")
+  console.log(req)
+  //createInvoice(req.body)
+  //res.send("success?")
+})
+
+app.post('/', function (req, res) {
+      console.log(req.params)
+      res.send("so postman works")
 })
 
 app.get('/', (req, res) => res.send("hellow world!"))
