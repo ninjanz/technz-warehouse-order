@@ -120,7 +120,7 @@ const createLineObj = async (orderObj, stockItems) => {
 }
 
 app.post('/createInv', function(req, res) {
-  console.log(req)
+  console.log(req.body)
   //createInvoice(req.body)
   //res.send("success?")
 })
