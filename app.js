@@ -120,13 +120,13 @@ const createLineObj = async (orderObj, stockItems) => {
 }
 
 app.post('/createInv', function(req, res) {
-  createInvoice(req.payload)
+  createInvoice(JSON.parse(req))
   res.send("success?")
 })
 
 app.get('/', (req, res) => res.send("hellow world!"))
 
-app.listen(port, () => console.log("listening on port" + port))
+app.listen(port, () => console.log("listening on port " + port))
 
 
 
