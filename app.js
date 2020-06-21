@@ -37,7 +37,6 @@ var test_payload = {
   "customer": "NZ Curry House @ Wangsa Maju"
 }
 
-
 const createInvoice = async (payload,) => {
   let skuArr = payload.items.map(item => item.sku)
   let custId = payload.customer
@@ -120,7 +119,11 @@ const createLineObj = async (orderObj, stockItems) => {
   return { "lineArr": lineArr, "rejArr": rejArr }
 }
 
-createInvoice(test_payload)
+app.post('/createInv', function(req, res) {
+  createInvoice(req.payload)
+  res.send("success?")
+})
+
 
 
 
