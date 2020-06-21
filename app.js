@@ -126,7 +126,7 @@ app.post('/createInv', function(req, res) {
 
 app.get('/', (req, res) => res.send("hellow world!"))
 
-app.listen(port, () => console.log("listening on port ${port}"))
+app.listen(port, () => console.log("listening on port" + port))
 
 
 
