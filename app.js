@@ -1,13 +1,15 @@
 var express = require('express');
 const { json } = require("express");
+var bodyParser = require('body-parser');
 var QuickBooks = require('node-quickbooks');
 
 var app = express()
+app.use(bodyParser.json());
 var port = process.env.PORT || 5000
 
 consumerKey = "ABA5XEHuZIotg70Hgz6Ut2g7crpKIQqZevTPAH6q3mK84W2rfY"
 consumerSecret = "bIYNXl1NllBYzuXKCPvIECVER0uaGBXhdempZYAZ"
-oauthToken = "eyJlbmMiOiJBMTI4Q0JDLUhTMjU2IiwiYWxnIjoiZGlyIn0..pAsXbgVoYk5TD0iQ3NCsmA.JrmGkY-IxoxioxcnDoqm8tmObaV8OvV57PpPatWJxpLSnpbk4pWycLEJxRcj3yw-yJ8l84EyT-hbeNTppDStnYH0pNgwHzy2yHSHN05bxNp-XE5rJQvv7hDSc1An62teyjewXR6YYSB5FW-b_y1fMzK9cxx0yTKyCWfH-Gw26XpShMBPTkJJ6eGAEXQNULKZVnMoqiPmPLChidabCKy7tNv2cKBJblzd64h3qlol8W7_JMv4mKy3GYdNRfG-GhRyyUIrD64NREcQYa_HmeQrc-qqd0JjUdNLxBLxurMBL8taqh6pgpJSpFms73RVLcBm1mwtY5ANhXSm7udRzJsnWWN0KElxxRPaaQ7LZbmhM6lJ2dmpjteOlj4WMddUUB45P0majX1eIwITalyH5rFsYFjaVhgw9bM3G8pI2dDfxZ2YINK6fnXH2IPjpJqbiGuInoo0XSIivQep5dK7Fenb7wbESevwLocESLcYpr4AWELz6MYffdB9nrNhXPQAkP4d3qUG09pxn8MJplFn2ht1OG60a43he3oi_q0w7Bq2LraV4r-5_HxGPEQGJMr25Yfw7whvBCbGSsASPnddEhwjqwJrh73RLWl7eFNSg0KYVyCNA4P9U3Fe-ifJnLOkp2gAR6lkZtx9yQXnuponZNZxaeDeQEZ2Gp6FXrCTKpHM9rTOi6wpPVnR5uzgO5cMkBXZtl6jWNxICsv6z-6Q37MTVtZ5xevbVMu_XE7_mR7jsj0L4bsM3HkozpK1b0fCZhMaHzaOlSlPMpZMyRpD28KRdMTlUhG9PXmRougc8Kw9GOJrYDD72bcrNO3Dmne6WS0aNwMrmBREEoptlQsXD55SFhzA-P_WnNowZ5SVXuzQexI.126NCMC0tI5921lAQefAPw"
+oauthToken = "eyJlbmMiOiJBMTI4Q0JDLUhTMjU2IiwiYWxnIjoiZGlyIn0..1XkEuntSsuwzy-Xf0gcgcQ.iGhRZ2yY9OwJK_Gc0n-IA5uRWMwqoRbOHknUikK8aoFtjhYWGqVLI9kWPkGSBvtmHMYPR2F9HS8e6z8c9sCY3N0vlhcPiTvgmLSMMKzmqlcUiekFeBdXKT_8VYYe5MWCCoDBuDwEZogx0coajVqJBv90VbHKhCvOOr9smTGqzUfuUR4E8Q4S90h3C4FIzyF9IgAgUbssF2LATgjwwQVnE9SfOBuSgBrY03nk5RY6_V3WtjqZwidSCS-jUfcIEyTFLoK9reVDPMzWQDg2uqoQB_dOsl2VVMS-OikGsoWdlx7PAJ8ZSFLZ9pwr_Iy8MetlSPL_vSgGydLXcpAJq_RvJANNk4VEIU-Coc2PvaX0TiyXLF-hqDyi32rplHLlrjwfeYrcfnvthRXNELwIw8Tokqzslyu7bZCSCk8pCzUBaKm2R5yMSBGJvdk7-n9vzLD-FVg75HLsXK2_TFx626OZJtU6UAxFmUKP03HPhNw0cyS5-SJV26KqlNaxw9QjE_LI6iwuN181Qp6eZfJPDKvsc5c7HnlKv8o6Nm2dvV0aCv_uQ3VArwg12UMFwDEWmumX_vinmElFPUz3liCETqv4qgC9nUSEGhNMk4HVTunC0COAZ7x95m7OJzIFGebWWhYcBfmtWZwrZcU1bRFYSJe8ufDqrg2bZfu-GUabPBXLDf0gPx5sAyaALAq2FC0IHr9-3pnLvfI7H4mnfP81MyD6mz7JB2RoW2VtuFx5qkbvxjGDjunJ0YTIkcfHyexzm5hxAq2Se3yOfH3ryRSu3EDrv-R8SQYCZGY6gdIhABvzXGW8kL2Qq5wtyRZRFbCi-mMx10KAYnZQwEFiz3CcV3PXKiP5YbwwaJ4060RUjQSASUo.fjZhESHi2AZ_CKELbsxl7w"
 realmId = "9130348557724336"
 refreshToken = "AB11601378776aTcnjQZG6Lr0QUSM4V2fNsCM9u76fOrD7CRPw"
 
@@ -121,12 +123,12 @@ const createLineObj = async (orderObj, stockItems) => {
 
 app.post('/createInv', function(req, res) {
   console.log(req.body)
-  createInvoice(req.body)
+createInvoice(req.body)
   //res.send("success?")
 })
 
 app.post('/', function (req, res) {
-      console.log(req.params)
+      console.log(req.body)
       res.send("so postman works")
 })
 
