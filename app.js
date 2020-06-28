@@ -48,10 +48,9 @@ var test_payload = {
 
 async function createInvoice(payload,) {
   let skuArr = payload.items.map(item => item.sku)
-  let custId = payload.customer
 
   queryObj = await Promise.all([qbo.findItems({ "Sku": skuArr }), 
-                                qbo.findCustomers({ "DisplayName": custId })])
+                                qbo.findCustomers({ "DisplayName": payload.customer })])
   console.log(queryObj)
 
   // create the line object
@@ -65,8 +64,13 @@ async function createInvoice(payload,) {
     "Line": lineObj.lineArr
   }
   try {
+    console.log("-------------------------------------------create-invoice #1-------------------------------------------")
     let inv_response = await qbo.createInvoice(invoiceObj)
+    console.log(inv_response.Id)
+    console.log("-------------------------------------------create-invoice #2-------------------------------------------")
     let send_response = await qbo.sendInvoicePdf(inv_response.Id)
+    console.log(send_response.Id)
+    console.log("-------------------------------------------create-invoice #3-------------------------------------------")
 
     console.log("Sent Invoice ", inv_response.Id, "by ", send_response.DeliveryInfo.DeliveryType, "at ", send_response.DeliveryInfo.DeliveryTime)
   } catch (err) {
