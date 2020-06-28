@@ -1,10 +1,12 @@
-import dotEnv from 'dotenv';
+
 import express from 'express';
-import {
-  json
-} from 'body-parser';
-import QuickBooks from 'node-quickbooks';
+import pkg from 'body-parser';
+const { json } = pkg;
+import QuickBooks from 'node-quickbooks-promise';
 import Heroku from 'heroku-client';
+import dotEnv from 'dotenv';
+
+dotEnv.config();
 
 // setup express with body-parser
 var app = express()
@@ -17,15 +19,6 @@ const heroku = new Heroku({
 const HEROKU_VARS_URL = process.env.HEROKU_VARS_URL
 
 var port = process.env.PORT || 3000
-
-
-
-async function setup() {
-  if (process.env.NODE_ENV == 'devlopment') {
-    dotEnv.config()
-  }
-}
-
 
 var qbo = new QuickBooks(process.env.QUICKBOOKS_CLIENT,
   process.env.QUICKBOOKS_SECRET,
@@ -53,15 +46,12 @@ var test_payload = {
   "customer": "NZ Curry House @ Wangsa Maju"
 };
 
-const createInvoice = async (payload,) => {
+async function createInvoice(payload,) {
   let skuArr = payload.items.map(item => item.sku)
-  let custId = typeof payload.customer == undefined ? payload.location : payload.customer
+  let custId = payload.customer
 
-  queryObj = await Promise.all([qbo.findItems({
-    "Sku": skuArr
-  }), qbo.findCustomers({
-    "DisplayName": cust
-  })])
+  queryObj = await Promise.all([qbo.findItems({ "Sku": skuArr }), 
+                                qbo.findCustomers({ "DisplayName": custId })])
   console.log(queryObj)
 
   // create the line object
@@ -134,13 +124,14 @@ app.get('/', (req, res) => {
 
 async function update_token() {
   // for testing
-  console.log(qbo.refreshToken)
+  console.log("stored refresh token: ", qbo.refreshToken)
 
   try {
     let refresh_response = await qbo.refreshAccessToken()
     
     let dateNow = new Date()
     console.log("Access Token Refreshed at " + dateNow.toISOString())
+    console.log("Refresh Response: ", refresh_response)
 
     await heroku.patch(HEROKU_VARS_URL, {
       body: {
@@ -150,29 +141,29 @@ async function update_token() {
       }
     })
   } catch (err) { console.log(err) }
-
 }
 
+
 app.get('/update-token', (req, res) => {
-  let dateNowCheck = new Date()
-  let lastRefresh = process.env.LAST_REFRESH
-  let timeDiff = (dateNowCheck - lastRefresh) / (1000*60)
+  let timeNow = new Date()
+  let lastRefresh = process.env.LAST_REFRESH === undefined ? new Date(timeNow - (60*1000*60)) : new Date(process.env.LAST_REFRESH)
+  let timeDiff = (timeNow - lastRefresh) / (1000*60)
+
+  console.log("timeNow: ", timeNow, ", lastRefresh: ", lastRefresh.toISOString(), ", timeDiff: ", timeDiff)
   
   if (timeDiff >= 55) {
     try {
-      await update_token()
-    } catch (err) { console.log(err) }
+      update_token()
+    } catch (err) { console.log("Error at app.get/update-token", err) }
   }
   else console.log("token update not required")
 })
 
 app.get('/company', (req, res) => {
-  qbo.findCompanyInfos((err, data) => {
-    if (!err) {
-      console.log(data)
-      res.body = data
-    } else console.log(err)
-  })
+  qbo.findCompanyInfos().then(data => {
+    console.log(data);
+    res.body(data)
+  }).catch((err) => { console.log(err) });
 })
 
 app.listen(port, () => console.log(process.env.NODE_ENV + " mode-- listening on port: " + port))

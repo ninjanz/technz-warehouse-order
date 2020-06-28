@@ -9,7 +9,8 @@
     "express": "^4.17.1",
     "heroku-client": "^3.1.0",
     "intuit-oauth": "^3.0.1",
-    "node-quickbooks": "github:KISINGA/node-quickbooks"
+    "node-quickbooks": "github:KISINGA/node-quickbooks",
+    "node-quickbooks-promise": "^1.0.5"
   },
   "devDependencies": {
     "nodemon": "^2.0.4"
@@ -19,6 +20,7 @@
     "dev": "nodemon app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "type": "module",
   "author": "",
   "license": "ISC"
 }
