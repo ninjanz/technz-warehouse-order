@@ -1,27 +1,31 @@
-var express = require('express');
-const { json } = require("express");
-var bodyParser = require('body-parser');
-var QuickBooks = require('node-quickbooks');
-require('dotenv').config()
-const Heroku = require('heroku-client');
+import dotEnv from 'dotenv';
+import express from 'express';
+import {
+  json
+} from 'body-parser';
+import QuickBooks from 'node-quickbooks';
+import Heroku from 'heroku-client';
 
-const heroku = new Heroku({ token: process.env.HEROKU_API_TOKEN })
+// setup express with body-parser
 var app = express()
-app.use(bodyParser.json());
-var port = process.env.PORT || 500
-var HEROKU_VARS_URL = '/apps/quickbooks-api-create-invoice/config-vars'
+app.use(json());
 
-if (process.env.NODE_ENV == 'development') {
-  heroku.get(HEROKU_VARS_URL).then(data => {
-    console.log(data)
-    process.env.QUICKBOOKS_CLIENT = data["QUICKBOOKS_CLIENT"]
-    process.env.QUICKBOOKS_SECRET = data["QUICKBOOKS_SECRET"]
-    process.env.QUICKBOOKS_REALMID = data["QUICKBOOKS_REALMID"]
-    process.env.QUICKBOOKS_ACCESS_TOKEN = data["QUICKBOOKS_ACCESS_TOKEN"]
-    process.env.QUICKBOOKS_REFRESH_TOKEN = data["QUICKBOOKS_REFRESH_TOKEN"]
-    process.env.QUICKBOOKS_LAST_REFRESH = data["QUICKBOOKS_LAST_REFRESH"]
-  })
+// setup heroku
+const heroku = new Heroku({
+  token: process.env.HEROKU_API_TOKEN
+})
+const HEROKU_VARS_URL = process.env.HEROKU_VARS_URL
+
+var port = process.env.PORT || 3000
+
+
+
+async function setup() {
+  if (process.env.NODE_ENV == 'devlopment') {
+    dotEnv.config()
+  }
 }
+
 
 var qbo = new QuickBooks(process.env.QUICKBOOKS_CLIENT,
   process.env.QUICKBOOKS_SECRET,
@@ -37,24 +41,27 @@ var qbo = new QuickBooks(process.env.QUICKBOOKS_CLIENT,
 
 var test_payload = {
   "date": "21-06-2020",
-  "items": [
-    {
-      "sku": "(HD) 5 x 8 - 1 KG",
-      "quantity": 20
-    },
-    {
-      "sku": "(HD) 6 x 9 - 1 KG",
-      "quantity": 30
-    }
+  "items": [{
+    "sku": "(HD) 5 x 8 - 1 KG",
+    "quantity": 20
+  },
+  {
+    "sku": "(HD) 6 x 9 - 1 KG",
+    "quantity": 30
+  }
   ],
   "customer": "NZ Curry House @ Wangsa Maju"
-}
+};
 
 const createInvoice = async (payload,) => {
   let skuArr = payload.items.map(item => item.sku)
   let custId = typeof payload.customer == undefined ? payload.location : payload.customer
 
-  queryObj = await Promise.all([getSkuArr(skuArr), getCustObj(custId)])
+  queryObj = await Promise.all([qbo.findItems({
+    "Sku": skuArr
+  }), qbo.findCustomers({
+    "DisplayName": cust
+  })])
   console.log(queryObj)
 
   // create the line object
@@ -67,37 +74,17 @@ const createInvoice = async (payload,) => {
     },
     "Line": lineObj.lineArr
   }
+  try {
+    let inv_response = await qbo.createInvoice(invoiceObj)
+    let send_response = await qbo.sendInvoicePdf(inv_response.Id)
 
-  qbo.createInvoice(invoiceObj, function (err, invoice) {
-    if (err) console.log(err)
-    else {
-      qbo.sendInvoicePdf(invoice.Id, "info@nzcurryhouse.com", function (err, data) {
-        if (err) console.log(err)
-      })
-      console.log("DONE/n")
-    }
-  })
+    console.log("Sent Invoice ", inv_response.Id, "by ", send_response.DeliveryInfo.DeliveryType, "at ", send_response.DeliveryInfo.DeliveryTime)
+  } catch (err) {
+    console.log(err)
+  }
 
   // print no stock invoice here
-  if (lineObj.rejArr.length > 0) console.log(rejArr)
-};
-
-const getSkuArr = async (skuArr) => {
-  return new Promise((resolve, reject) => {
-    qbo.findItems({ "Sku": skuArr }, function (err, data) {
-      if (err) reject(console.log(err))
-      else resolve(data)
-    })
-  })
-};
-
-const getCustObj = async (cust) => {
-  return new Promise((resolve, reject) => {
-    qbo.findCustomers({ "DisplayName": cust }, function (err, data) {
-      if (err) reject(console.log(err))
-      else resolve(data)
-    })
-  })
+  if (lineObj.rejArr.length > 0) console.log("rejected orders: \n", rejArr)
 };
 
 const createLineObj = async (orderObj, stockItems) => {
@@ -110,8 +97,7 @@ const createLineObj = async (orderObj, stockItems) => {
 
         // check if there is enough quantity
         if (element["QtyOnHand"] >= subElement["quantity"]) {
-          lineBase =
-          {
+          lineBase = {
             "DetailType": "SalesItemLineDetail",
             "Amount": element["UnitPrice"] * subElement["quantity"],
             "SalesItemLineDetail": {
@@ -123,12 +109,14 @@ const createLineObj = async (orderObj, stockItems) => {
           }
 
           lineArr.push(lineBase)
-        }
-        else rejArr.push(subElement)
+        } else rejArr.push(subElement)
       }
     })
   })
-  return { "lineArr": lineArr, "rejArr": rejArr }
+  return {
+    "lineArr": lineArr,
+    "rejArr": rejArr
+  }
 }
 
 app.post('/create-invoice', function (req, res) {
@@ -137,34 +125,45 @@ app.post('/create-invoice', function (req, res) {
   //res.send("success?")
 })
 
-app.post('/', function (req, res) {
-  console.log(req.body)
-  res.send("so postman works")
-})
-
 app.get('/', (req, res) => {
-  heroku.get(HEROKU_VARS_URL).then(vars => { console.log(vars) })
+  heroku.get(HEROKU_VARS_URL).then(vars => {
+    console.log(vars)
+  })
   res.send("hellow world!")
 })
 
-app.get('/update-token', (req, res) => {
-
+async function update_token() {
+  // for testing
   console.log(qbo.refreshToken)
-  qbo.refreshAccessToken((err, data) => {
-    if (err) { console.log(err) }
-    else {
-      dateNow = new Date().toISOString()
-      console.log("Access Token Refreshed at " + dateNow)
-      console.log(data)
-      heroku.patch(HEROKU_VARS_URL, {
-        body: {
-          QUICKBOOKS_ACCESS_TOKEN: data.access_token,
-          QUICKBOOKS_REFRESH_TOKEN: data.refresh_token,
-          QUICKBOOKS_LAST_REFRESH: dateNow
-        }
-      })
-    }
-  })
+
+  try {
+    let refresh_response = await qbo.refreshAccessToken()
+    
+    let dateNow = new Date()
+    console.log("Access Token Refreshed at " + dateNow.toISOString())
+
+    await heroku.patch(HEROKU_VARS_URL, {
+      body: {
+        QUICKBOOKS_ACCESS_TOKEN: refresh_response.access_token,
+        QUICKBOOKS_REFRESH_TOKEN: refresh_response.refresh_token,
+        QUICKBOOKS_LAST_REFRESH: dateNow
+      }
+    })
+  } catch (err) { console.log(err) }
+
+}
+
+app.get('/update-token', (req, res) => {
+  let dateNowCheck = new Date()
+  let lastRefresh = process.env.LAST_REFRESH
+  let timeDiff = (dateNowCheck - lastRefresh) / (1000*60)
+  
+  if (timeDiff >= 55) {
+    try {
+      await update_token()
+    } catch (err) { console.log(err) }
+  }
+  else console.log("token update not required")
 })
 
 app.get('/company', (req, res) => {
@@ -172,14 +171,8 @@ app.get('/company', (req, res) => {
     if (!err) {
       console.log(data)
       res.body = data
-    }
-
-    else console.log(err)
+    } else console.log(err)
   })
 })
 
 app.listen(port, () => console.log(process.env.NODE_ENV + " mode-- listening on port: " + port))
-
-
-
-
