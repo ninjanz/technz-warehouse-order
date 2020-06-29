@@ -127,14 +127,11 @@ app.get('/', (req, res) => {
 })
 
 async function update_token() {
-  // for testing
-  console.log("stored refresh token: ", qbo.refreshToken)
-
   try {
     let refresh_response = await qbo.refreshAccessToken()
     
     let dateNow = new Date()
-    console.log("Access Token Refreshed at " + dateNow.toISOString())
+    console.log("Access Token Refreshed at: ", dateNow.toISOString(), " / ", dateNow.getTime())
     console.log("Refresh Response: ", refresh_response)
 
     await heroku.patch(HEROKU_VARS_URL, {
@@ -150,7 +147,7 @@ async function update_token() {
 
 app.get('/update-token', (req, res) => {
   let timeNow = new Date()
-  let lastRefresh = process.env.LAST_REFRESH === undefined ? new Date(timeNow - (60*1000*60)) : new Date(process.env.LAST_REFRESH)
+  let lastRefresh = process.env.QUICKBOOKS_LAST_REFRESH === "" ? new Date(timeNow - (60*1000*60)) : new Date(Number(process.env.QUICKBOOKS_LAST_REFRESH))
   let timeDiff = (timeNow - lastRefresh) / (1000*60)
 
   console.log("timeNow: ", timeNow, ", lastRefresh: ", lastRefresh.toISOString(), ", timeDiff: ", timeDiff)
@@ -158,7 +155,7 @@ app.get('/update-token', (req, res) => {
   if (timeDiff >= 55) {
     try {
       update_token()
-    } catch (err) { console.log("Error at app.get/update-token", err) }
+    } catch (err) { console.log("Error at app.get/update-token: ", err) }
   }
   else console.log("token update not required")
 })
