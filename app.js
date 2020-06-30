@@ -117,7 +117,7 @@ async function createLineObj (orderObj, stockItems) {
 
 app.post('/create-invoice', function (req, res) {
   //update_token().then(createInvoice(req.body[0]))
-  console.log(req.body)
+  console.log("request: ", req)
   //res.send("success?")
 })
 
