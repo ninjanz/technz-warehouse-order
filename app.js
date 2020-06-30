@@ -48,16 +48,18 @@ var test_payload = {
 
 async function createInvoice(payload,) {
   let skuArr = payload.items.map(item => item.sku)
+  console.log(skuArr)
 
-  queryObj = await Promise.all([qbo.findItems({ "Sku": skuArr }), 
-                                qbo.findCustomers({ "DisplayName": payload.customer })])
+  let queryObj = await Promise.all([qbo.findItems({ "Sku": skuArr }),
+  qbo.findCustomers({ "DisplayName": payload.customer })])
   console.log(queryObj)
 
   // create the line object
-  lineObj = await createLineObj(payload, queryObj[0].QueryResponse.Item)
+  let lineObj = await createLineObj(payload, queryObj[0].QueryResponse.Item)
+  console.log(lineObj)
 
   // create the invoice with all the required params
-  invoiceObj = {
+  let invoiceObj = {
     "CustomerRef": {
       "value": queryObj[1].QueryResponse.Customer[0].Id,
     },
@@ -78,12 +80,12 @@ async function createInvoice(payload,) {
   }
 
   // print no stock invoice here
-  if (lineObj.rejArr.length > 0) console.log("rejected orders: \n", rejArr)
+  if (lineObj.rejArr.length > 0) console.log("rejected orders: \n", lineObj.rejArr)
 };
 
-const createLineObj = async (orderObj, stockItems) => {
-  lineArr = []
-  rejArr = []
+async function createLineObj (orderObj, stockItems) {
+  let lineArr = []
+  let rejArr = []
 
   stockItems.forEach(element => {
     orderObj.items.forEach(subElement => {
@@ -91,7 +93,7 @@ const createLineObj = async (orderObj, stockItems) => {
 
         // check if there is enough quantity
         if (element["QtyOnHand"] >= subElement["quantity"]) {
-          lineBase = {
+          let lineBase = {
             "DetailType": "SalesItemLineDetail",
             "Amount": element["UnitPrice"] * subElement["quantity"],
             "SalesItemLineDetail": {
@@ -114,8 +116,8 @@ const createLineObj = async (orderObj, stockItems) => {
 }
 
 app.post('/create-invoice', function (req, res) {
-  console.log(req.body)
-  createInvoice(req.body[0])
+  update_token().then(createInvoice(req.body[0]))
+  //console.log(req.body)
   //res.send("success?")
 })
 
@@ -127,43 +129,35 @@ app.get('/', (req, res) => {
 })
 
 async function update_token() {
-  try {
-    let refresh_response = await qbo.refreshAccessToken()
-    
-    let dateNow = new Date()
-    console.log("Access Token Refreshed at: ", dateNow.toISOString(), " / ", dateNow.getTime())
-    console.log("Refresh Response: ", refresh_response)
-
-    await heroku.patch(HEROKU_VARS_URL, {
-      body: {
-        QUICKBOOKS_ACCESS_TOKEN: refresh_response.access_token,
-        QUICKBOOKS_REFRESH_TOKEN: refresh_response.refresh_token,
-        QUICKBOOKS_LAST_REFRESH: dateNow
-      }
-    })
-  } catch (err) { console.log(err) }
-}
-
-
-app.get('/update-token', (req, res) => {
   let timeNow = new Date()
-  let lastRefresh = process.env.QUICKBOOKS_LAST_REFRESH === "" ? new Date(timeNow - (60*1000*60)) : new Date(Number(process.env.QUICKBOOKS_LAST_REFRESH))
-  let timeDiff = (timeNow - lastRefresh) / (1000*60)
+  let lastRefresh = process.env.QUICKBOOKS_LAST_REFRESH === "" ? new Date(timeNow - (60 * 1000 * 60)) : new Date(Number(process.env.QUICKBOOKS_LAST_REFRESH))
+  let timeDiff = (timeNow - lastRefresh) / (1000 * 60)
 
   console.log("timeNow: ", timeNow, ", lastRefresh: ", lastRefresh.toISOString(), ", timeDiff: ", timeDiff)
-  
+
   if (timeDiff >= 55) {
     try {
-      update_token()
+      let refresh_response = await qbo.refreshAccessToken()
+
+      let dateNow = new Date()
+      console.log("Access Token Refreshed at: ", dateNow.toISOString(), " / ", dateNow.getTime())
+      console.log("Refresh Response: ", refresh_response)
+
+      await heroku.patch(HEROKU_VARS_URL, {
+        body: {
+          QUICKBOOKS_ACCESS_TOKEN: refresh_response.access_token,
+          QUICKBOOKS_REFRESH_TOKEN: refresh_response.refresh_token,
+          QUICKBOOKS_LAST_REFRESH: dateNow
+        }
+      })
     } catch (err) { console.log("Error at app.get/update-token: ", err) }
-  }
-  else console.log("token update not required")
-})
+  } else console.log("token update not required")
+}
 
 app.get('/company', (req, res) => {
   qbo.findCompanyInfos().then(data => {
     console.log(data);
-    res.body(data)
+    res.send(data);
   }).catch((err) => { console.log(err) });
 })
 
