@@ -4,9 +4,9 @@ import pkg from 'body-parser';
 const { json } = pkg;
 import QuickBooks from 'node-quickbooks-promise';
 import Heroku from 'heroku-client';
-import dotEnv from 'dotenv';
+//import dotEnv from 'dotenv';
 
-dotEnv.config();
+//dotEnv.config();
 
 // setup express with body-parser
 var app = express()
