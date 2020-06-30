@@ -116,8 +116,10 @@ async function createLineObj (orderObj, stockItems) {
 }
 
 app.post('/create-invoice', function (req, res) {
+  // on heroku, req.body[0] not required
   //update_token().then(createInvoice(req.body[0]))
   console.log("request: ", req)
+  update_token().then(createInvoice(req.body))
   //res.send("success?")
 })
 
