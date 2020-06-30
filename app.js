@@ -70,7 +70,7 @@ async function createInvoice(payload,) {
     let inv_response = await qbo.createInvoice(invoiceObj)
     console.log(inv_response.Id)
     console.log("-------------------------------------------create-invoice #2-------------------------------------------")
-    let send_response = await qbo.sendInvoicePdf(inv_response.Id)
+    let send_response = await qbo.sendInvoicePdf(inv_response.Id, "plastic@nzcurryhouse.com")
     console.log(send_response.Id)
     console.log("-------------------------------------------create-invoice #3-------------------------------------------")
 
