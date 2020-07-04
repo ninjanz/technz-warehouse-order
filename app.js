@@ -3,7 +3,7 @@ import express from 'express';
 import pkg from 'body-parser';
 import Heroku from 'heroku-client';
 
-import { createInvoice, updateToken } from "./qbo_funcs.js";
+import { qbo, createInvoice, updateToken } from "./qbo_funcs.js";
 
  
 // if environment is development use dotenv else heroku

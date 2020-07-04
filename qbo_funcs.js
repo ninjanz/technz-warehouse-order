@@ -107,4 +107,4 @@ async function updateToken() {
     } else console.log("token update not required")
 }
 
-export { createInvoice, updateToken };
+export { qbo, createInvoice, updateToken };
