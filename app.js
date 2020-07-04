@@ -8,7 +8,9 @@ import { createInvoice, updateToken } from "./qbo_funcs.js";
  
 // if environment is development use dotenv else heroku
 // also res objects are different when using heroku
-if (process.env.NODE_ENV == 'development') { import 'dotenv/config'; };
+if (process.env.NODE_ENV == 'development') { 
+  import dotenv from 'dotenv';
+  dotenv.config(); };
 
 
 // setup express with body-parser
