@@ -38,7 +38,7 @@ var test_payload = {
 app.post('/create-invoice', function (req, res) {
   // on heroku, req.body[0] not required
   //update_token().then(createInvoice(req.body[0]))
-  console.log("request: ", req)
+  //console.log("request: ", req)
   updateToken().then(createInvoice(req.body))
   //res.send("success?")
 })
@@ -52,7 +52,7 @@ app.get('/', (req, res) => {
 
 app.get('/company', (req, res) => {
   qbo.findCompanyInfos().then(data => {
-    console.log(data);
+    //console.log(data);
     res.send(data);
   }).catch((err) => { console.log(err) });
 })
