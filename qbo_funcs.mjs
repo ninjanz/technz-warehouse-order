@@ -1,5 +1,4 @@
 import QuickBooks from 'node-quickbooks-promise';
-import { sendDoc } from './telegram_funcs.js';
 
 var qbo = new QuickBooks(process.env.QUICKBOOKS_CLIENT,
     process.env.QUICKBOOKS_SECRET,

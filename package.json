@@ -2,7 +2,7 @@
   "name": "quickbooks-test",
   "version": "1.0.0",
   "description": "",
-  "main": "app.js",
+  "main": "app.mjs",
   "dependencies": {
     "body-parser": "^1.19.0",
     "dotenv": "^8.2.0",
@@ -17,11 +17,10 @@
     "nodemon": "^2.0.4"
   },
   "scripts": {
-    "start": "node app.js",
-    "dev": "nodemon app.js",
+    "start": "node app.mjs",
+    "dev": "nodemon app.mjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "type": "module",
   "author": "",
   "license": "ISC"
 }
