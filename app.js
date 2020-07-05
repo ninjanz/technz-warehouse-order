@@ -5,7 +5,7 @@ import Heroku from 'heroku-client';
 
 import { qbo, createInvoice, updateToken } from "./qbo_funcs.js";
 
-import { sendDoc } from './telegram_funcs,js';
+import { sendDoc } from './telegram_funcs.js';
 
 // setup express with body-parser
 var app = express()
