@@ -13,16 +13,7 @@ var qbo = new QuickBooks(process.env.QUICKBOOKS_CLIENT,
 
 async function createInvoice(payload,) {
     let skuArr = payload.items.map(item => item.sku)
-    console.log(skuArr)
-
-    let queryObj = await Promise.all(
-        [qbo.findItems({ "Sku": skuArr }),
-        qbo.findCustomers({ "DisplayName": payload.customer })])
-    //console.log(queryObj)
-
-    // create the line object
-    let lineObj = await createLineObj(payload, queryObj[0].QueryResponse.Item)
-    //console.log(lineObj)
+    //console.log(skuArr)
 
     // create the invoice with all the required params
     let invoiceObj = {
@@ -31,7 +22,18 @@ async function createInvoice(payload,) {
         },
         "Line": lineObj.lineArr
     }
+ 
     try {
+        let queryObj = await Promise.all(
+            [qbo.findItems({ "Sku": skuArr }),
+            qbo.findCustomers({ "DisplayName": payload.customer })])
+        //console.log(queryObj)
+    
+        // create the line object
+        let lineObj = await createLineObj(payload, queryObj[0].QueryResponse.Item)
+        //console.log(lineObj)
+
+
         //console.log("-------------------------------------------create-invoice #1-------------------------------------------")
         let inv_response = await qbo.createInvoice(invoiceObj)
         //console.log(inv_response.Id)
@@ -83,7 +85,7 @@ async function createLineObj(orderObj, stockItems) {
 
 async function updateToken() {
     let timeNow = new Date()
-    let lastRefresh = process.env.QUICKBOOKS_LAST_REFRESH === "" ? new Date(timeNow - (60 * 1000 * 60)) : new Date(Number(process.env.QUICKBOOKS_LAST_REFRESH))
+    let lastRefresh = process.env.QUICKBOOKS_LAST_REFRESH === "" ? new Date(timeNow - (60 * 1000 * 60)) : new Date(process.env.QUICKBOOKS_LAST_REFRESH)
     let timeDiff = (timeNow - lastRefresh) / (1000 * 60)
 
     console.log("timeNow: ", timeNow, ", lastRefresh: ", lastRefresh.toISOString(), ", timeDiff: ", timeDiff)
