@@ -1,4 +1,5 @@
 import QuickBooks from 'node-quickbooks-promise';
+import { sendDoc } from './telegram_funcs.js';
 
 var qbo = new QuickBooks(process.env.QUICKBOOKS_CLIENT,
     process.env.QUICKBOOKS_SECRET,
@@ -12,36 +13,23 @@ var qbo = new QuickBooks(process.env.QUICKBOOKS_CLIENT,
     process.env.QUICKBOOKS_REFRESH_TOKEN);
 
 async function createInvoice(payload,) {
-    let skuArr = payload.items.map(item => item.sku)
-    //console.log(skuArr)
-
     // create the invoice with all the required params
-    let invoiceObj = {
-        "CustomerRef": {
-            "value": queryObj[1].QueryResponse.Customer[0].Id,
-        },
-        "Line": lineObj.lineArr
-    }
- 
+
     try {
+        let skuArr = payload.items.map(item => item.sku)
         let queryObj = await Promise.all(
             [qbo.findItems({ "Sku": skuArr }),
             qbo.findCustomers({ "DisplayName": payload.customer })])
-        //console.log(queryObj)
-    
-        // create the line object
         let lineObj = await createLineObj(payload, queryObj[0].QueryResponse.Item)
-        //console.log(lineObj)
-
-
-        //console.log("-------------------------------------------create-invoice #1-------------------------------------------")
+        let invoiceObj = {
+            "CustomerRef": {
+                "value": queryObj[1].QueryResponse.Customer[0].Id,
+            },
+            "Line": lineObj.lineArr
+        }
         let inv_response = await qbo.createInvoice(invoiceObj)
-        //console.log(inv_response.Id)
-        //console.log("-------------------------------------------create-invoice #2-------------------------------------------")
         let send_response = await qbo.sendInvoicePdf(inv_response.Id, "plastic@nzcurryhouse.com")
-        //console.log(send_response.Id)
-        //console.log("-------------------------------------------create-invoice #3-------------------------------------------")
-
+        
         console.log("Sent Invoice ", inv_response.Id, "by ", send_response.DeliveryInfo.DeliveryType, "at ", send_response.DeliveryInfo.DeliveryTime)
     } catch (err) {
         console.log(err)
