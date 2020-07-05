@@ -32,8 +32,8 @@ app.post('/create-invoice', function (req, res) {
 
 app.get('/send-doc', (req, res) => {
     updateToken()
-    .then(qbo.findInvoices( {"DocNumber": "1001"} ))
-    //.then((invObj) => qbo.getInvoicePdf(invObj.QueryResponse.Item[0].Id))
+    .then(qbo.findInvoices())
+    //.then((invObj) => qbo.getInvoicePdf(invObj.QueryResponse.Invoice[0].Id))
     .then((doc) => console.log(doc))
     //.then((doc) => sendDoc.sendDoc(doc))
     //.catch((err) => console.log(err))
