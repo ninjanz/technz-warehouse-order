@@ -34,12 +34,10 @@ app.post('/create-invoice', function (req, res) {
 })
 
 app.get('/send-doc', (req, res) => {
-  try {
-    await updateToken()
-    let doc = await qbo.getInvoicePdf('1001')
-    sendDoc.sendDoc(doc)
-  } catch (err) { console.log(err) }
+    updateToken()
+    .then(qbo.getInvoicePdf('1001'))
+    .then((doc) => sendDoc.sendDoc(doc))
+    .catch((err) => console.log(err))
 })
-
 
 app.listen(port, () => console.log("-- listening on port: " + port))
