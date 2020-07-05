@@ -1,4 +1,6 @@
-import { TelegramBot } from 'node-telegram-bot-api';
+import pkg from 'node-telegram-bot-api';
+const { TelegramBot } = pkg;
+
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN)
 
 async function sendDoc(doc) {
