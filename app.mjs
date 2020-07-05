@@ -1,7 +1,6 @@
 
 import express from 'express';
 import bodyParser from 'body-parser';
-import Heroku from 'heroku-client';
 
 import { qbo, createInvoice, updateToken } from "./qbo_funcs.mjs";
 
@@ -11,8 +10,6 @@ import sendDoc from './telegram_funcs.js';
 var app = express()
 app.use(bodyParser.json());
 
-const heroku = new Heroku({ token: process.env.HEROKU_API_TOKEN })
-const HEROKU_VARS_URL = process.env.HEROKU_VARS_URL
 const port = process.env.PORT || 3000
 
 // deploy test
