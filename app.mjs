@@ -34,8 +34,11 @@ app.post('/create-invoice', function (req, res) {
 })
 
 app.get('/send-doc', (req, res) => {
-  console.log(sendDoc);
-  sendDoc.sendDoc(qbo.getInvoicePdf('1001'))
+  try {
+    await updateToken()
+    let doc = await qbo.getInvoicePdf('1001')
+    sendDoc.sendDoc(doc)
+  } catch (err) { console.log(err) }
 })
 
 
