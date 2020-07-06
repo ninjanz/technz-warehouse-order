@@ -1,7 +1,7 @@
 
 import express from 'express';
 import bodyParser from 'body-parser';
-import * as Queue from 'bull';
+import Queue from 'bull';
 import { qbo, createInvoice, updateToken } from "./qbo_funcs.mjs";
 
 import tel from './telegram_funcs.js';
