@@ -18,6 +18,7 @@ downloadQ.process(async (job) => {
   console.log(`Job received!`)
   // job is just a json object containing the invoice ID
   docBuffer = await qbo.getInvoicePdf({"Id": job.Id});
+  console.log("download completed!")
   return docBuffer
 })
 
@@ -56,7 +57,7 @@ app.post('/send-doc', async (req, res) => {
 // Allows the client to query the state of a background job
 app.get('/job/:id', async (req, res) => {
   let id = req.params.id;
-  let job = await workQueue.getJob(id);
+  let job = await downloadQ.getJob(id);
 
   if (job === null) {
     res.status(404).end();
@@ -69,7 +70,7 @@ app.get('/job/:id', async (req, res) => {
 
 downloadQ.on('global:completed', (jobId, result) => {
   console.log(`Job ${jobId} completed! Sending via Telegram now!`)
-  tel.sendDoc(result)
+  tel.sendDoc(result)  
 })
 
 app.listen(PORT, () => console.log("-- listening on port: " + PORT))
