@@ -30,11 +30,11 @@ app.post('/create-invoice', function (req, res) {
   .catch((err) => { res.send(err); console.log(err); })
 })
 
-app.get('/send-doc', (req, res) => {
-    updateToken()
-    .then(qbo.findInvoices())
+app.get('/send-doc', async (req, res) => {
+    await updateToken()
+    invoices = await qbo.findInvoices()
     //.then((invObj) => qbo.getInvoicePdf(invObj.QueryResponse.Invoice[0].Id))
-    .then(doc => { console.log(doc) })
+    console.log(invoices)
     //.then((doc) => sendDoc.sendDoc(doc))
     //.catch((err) => console.log(err))
 })
