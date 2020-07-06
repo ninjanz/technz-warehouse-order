@@ -15,11 +15,13 @@ const REDIS_URL = process.env.REDIS_URL || 'redis://127.0.0.1:6379'
 
 const downloadQ = new Queue('download', REDIS_URL);
 downloadQ.process(async (job) => {
-  console.log(`Job received!`)
+  console.log(`Job received! ${job}`)
   // job is just a json object containing the invoice ID
-  let docBuffer = await qbo.getInvoicePdf({"Id": job.Id});
-  console.log("download completed!")
-  return docBuffer
+  try {
+    let docBuffer = await qbo.getInvoicePdf({"Id": job.Id});
+    console.log("download completed!")
+    return docBuffer
+  } catch(err) { console.log(err) }
 })
 
 // deploy test
