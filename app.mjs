@@ -32,7 +32,7 @@ app.post('/create-invoice', function (req, res) {
 
 app.get('/send-doc', async (req, res) => {
     await updateToken()
-    invoices = await qbo.findInvoices()
+    let invoices = await qbo.findInvoices()
     //.then((invObj) => qbo.getInvoicePdf(invObj.QueryResponse.Invoice[0].Id))
     console.log(invoices)
     //.then((doc) => sendDoc.sendDoc(doc))
