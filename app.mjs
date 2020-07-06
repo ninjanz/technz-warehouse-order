@@ -35,7 +35,8 @@ app.get('/send-doc', async (req, res) => {
     let invoices = await qbo.findInvoices()
     //.then((invObj) => qbo.getInvoicePdf(invObj.QueryResponse.Invoice[0].Id))
     console.log(invoices)
-    //.then((doc) => sendDoc.sendDoc(doc))
+    let doc = await qbo.getInvoicePdf({"Id": invoices.QueryResponse.Invoice[0].Id}) 
+    sendDoc.sendDoc(doc)
     //.catch((err) => console.log(err))
 })
 
