@@ -1,16 +1,23 @@
 
 import express from 'express';
 import bodyParser from 'body-parser';
-
+import * as Queue from 'bull';
 import { qbo, createInvoice, updateToken } from "./qbo_funcs.mjs";
 
 import tel from './telegram_funcs.js';
 
 // setup express with body-parser
-var app = express()
+const app = express()
 app.use(bodyParser.json());
 
-const port = process.env.PORT || 3000
+const PORT = process.env.PORT || 3000
+const REDIS_URL = process.env.REDIS_URL || 'redis://127.0.0.1:6379'
+
+const downloadQ = new Queue('download', REDIS_URL);
+downloadQ.process(async (job) => {
+  // job is just a json object containing the invoice ID
+  return await qbo.getInvoicePdf({"Id": job.Id})
+})
 
 // deploy test
 app.get('/', (req, res) => {
@@ -36,11 +43,17 @@ app.get('/send-doc', async (req, res) => {
     let invoices = await qbo.findInvoices()
     //.then((invObj) => qbo.getInvoicePdf(invObj.QueryResponse.Invoice[0].Id))
     console.log(invoices)
-    let doc = await qbo.getInvoicePdf({"Id": invoices.QueryResponse.Invoice[0].Id})
+    let job = await downloadQ.add({"Id": invoices.QueryResponse.Invoice[0].Id})
+    res.json({ id: job.id })
     //console.log(doc) 
-    tel.sendDoc(doc)
+    //tel.sendDoc(doc)
     //.
   } catch(err)  { console.log(err) }
 })
 
-app.listen(port, () => console.log("-- listening on port: " + port))
+downloadQ.on('completed', (jobId, result) => {
+  console.log(`Job ${jobId} completed! Sending via Telegram now!`)
+  tel.sendDoc(result)
+})
+
+app.listen(PORT, () => console.log("-- listening on port: " + PORT))
