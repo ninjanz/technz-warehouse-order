@@ -31,13 +31,15 @@ app.post('/create-invoice', function (req, res) {
 })
 
 app.get('/send-doc', async (req, res) => {
+  try{
     await updateToken()
     let invoices = await qbo.findInvoices()
     //.then((invObj) => qbo.getInvoicePdf(invObj.QueryResponse.Invoice[0].Id))
     console.log(invoices)
     let doc = await qbo.getInvoicePdf({"Id": invoices.QueryResponse.Invoice[0].Id}) 
     sendDoc.sendDoc(doc)
-    //.catch((err) => console.log(err))
+    //.
+  } catch(err)  { console.log(err) }
 })
 
 app.listen(port, () => console.log("-- listening on port: " + port))
