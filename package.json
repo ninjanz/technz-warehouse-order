@@ -8,6 +8,7 @@
     "bull": "^3.15.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
+    "file-type": "^14.6.2",
     "heroku-client": "^3.1.0",
     "intuit-oauth": "^3.0.1",
     "node-quickbooks": "github:KISINGA/node-quickbooks",
