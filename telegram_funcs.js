@@ -3,6 +3,7 @@ const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN);
 const FileType = require('file-type')
 
 async function sendDoc(doc) {
+    console.log(doc)
     console.log(await FileType.fromBuffer(doc))
     opts = { "contentType": "application/pdf" }
 
