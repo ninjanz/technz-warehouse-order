@@ -15,8 +15,10 @@ const REDIS_URL = process.env.REDIS_URL || 'redis://127.0.0.1:6379'
 
 const downloadQ = new Queue('download', REDIS_URL);
 downloadQ.process(async (job) => {
+  console.log(`Job received!`)
   // job is just a json object containing the invoice ID
-  return await qbo.getInvoicePdf({"Id": job.Id})
+  docBuffer = await qbo.getInvoicePdf({"Id": job.Id});
+  return docBuffer
 })
 
 // deploy test
@@ -37,21 +39,35 @@ app.post('/create-invoice', function (req, res) {
   .catch((err) => { res.send(err); console.log(err); })
 })
 
-app.get('/send-doc', async (req, res) => {
+app.post('/send-doc', async (req, res) => {
   try{
     await updateToken()
     let invoices = await qbo.findInvoices()
     //.then((invObj) => qbo.getInvoicePdf(invObj.QueryResponse.Invoice[0].Id))
     console.log(invoices)
     let job = await downloadQ.add({"Id": invoices.QueryResponse.Invoice[0].Id})
-    res.json({ id: job.id })
+    return res.json({ id: job.id })
     //console.log(doc) 
     //tel.sendDoc(doc)
     //.
   } catch(err)  { console.log(err) }
 })
 
-downloadQ.on('completed', (jobId, result) => {
+// Allows the client to query the state of a background job
+app.get('/job/:id', async (req, res) => {
+  let id = req.params.id;
+  let job = await workQueue.getJob(id);
+
+  if (job === null) {
+    res.status(404).end();
+  } else {
+    let state = await job.getState();
+    let reason = job.failedReason;
+    res.json({ id, state, progress, reason });
+  }
+});
+
+downloadQ.on('global:completed', (jobId, result) => {
   console.log(`Job ${jobId} completed! Sending via Telegram now!`)
   tel.sendDoc(result)
 })
