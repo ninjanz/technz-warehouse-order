@@ -4,7 +4,7 @@ import bodyParser from 'body-parser';
 import Queue from 'bull';
 import { qbo, createInvoice, updateToken } from "./qbo_funcs.mjs";
 
-import tel from './telegram_funcs.js';
+//import tel from './telegram_funcs.js';
 
 import TelegramBot from 'node-telegram-bot-api';
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN)
