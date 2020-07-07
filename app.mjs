@@ -17,7 +17,7 @@ const downloadQ = new Queue('download', REDIS_URL);
 downloadQ.process(async (job) => {
   console.log(`Job received! ${job}`)
   // job is just a json object containing the invoice ID
-    return qbo.getInvoicePdf({"Id": job.Id});
+    return await qbo.getInvoicePdf({"Id": job.Id});
 })
 
 // deploy test
