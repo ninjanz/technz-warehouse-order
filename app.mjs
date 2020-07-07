@@ -6,6 +6,9 @@ import { qbo, createInvoice, updateToken } from "./qbo_funcs.mjs";
 
 import tel from './telegram_funcs.js';
 
+import TelegramBot from 'node-telegram-bot-api';
+const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN)
+
 // setup express with body-parser
 const app = express()
 app.use(bodyParser.json());
@@ -17,7 +20,12 @@ const downloadQ = new Queue('download', REDIS_URL);
 downloadQ.process(async (job) => {
   console.log(`Job received! ${job}`)
   // job is just a json object containing the invoice ID
-    return await qbo.getInvoicePdf({"Id": job.Id});
+  return await qbo.getInvoicePdf(job.Id);
+})
+
+downloadQ.on('completed', (jobId, result) => {
+  console.log(`Job ${jobId} completed! Sent via Telegram!`)
+  tel.sendDoc(result)
 })
 
 // deploy test
@@ -66,9 +74,6 @@ app.get('/job/:id', async (req, res) => {
   }
 });
 
-downloadQ.on('completed', (jobId, result) => {
-  console.log(`Job ${jobId} completed! Sending via Telegram now!`)
-  tel.sendDoc(result)  
-})
+
 
 app.listen(PORT, () => console.log("-- listening on port: " + PORT))
