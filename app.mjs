@@ -1,23 +1,24 @@
-
 import express from 'express';
 import bodyParser from 'body-parser';
-import Queue from 'bull';
-import { qbo, createInvoice, updateToken } from "./qbo_funcs.mjs";
+//import Queue from 'bull';
 
+import { qbo, createInvoice, updateToken } from "./quickbooks.mjs";
+import { downloadQ } from "./queue.mjs";
+import { bot } from "./comms.mjs";
 //import tel from './telegram_funcs.js';
 
-import TelegramBot from 'node-telegram-bot-api';
-const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN)
+//import TelegramBot from 'node-telegram-bot-api';
+//const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN)
 
 // setup express with body-parser
 const app = express()
 app.use(bodyParser.json());
 
 const PORT = process.env.PORT || 3000
-const REDIS_URL = process.env.REDIS_URL || 'redis://127.0.0.1:6379'
+//const REDIS_URL = process.env.REDIS_URL || 'redis://127.0.0.1:6379'
 
-const downloadQ = new Queue('download', REDIS_URL);
-downloadQ.process(async (job) => {
+//const downloadQ = new Queue('download', REDIS_URL);
+/*downloadQ.process(async (job) => {
   console.log(`Job received!`);
   console.log(job)
   // job.data is just a json object containing the invoice ID
@@ -27,7 +28,7 @@ downloadQ.process(async (job) => {
 downloadQ.on('completed', (jobId, result) => {
   console.log(`Job ${jobId} completed! Sent via Telegram!`)
   bot.sendDocument("-400162180", result)
-})
+})*/
 
 // deploy test
 app.get('/', (req, res) => {
