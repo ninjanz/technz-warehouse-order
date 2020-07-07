@@ -21,7 +21,7 @@ downloadQ.process(async (job) => {
   console.log(`Job received!`);
   console.log(job)
   // job is just a json object containing the invoice ID
-  return await qbo.getInvoicePdf(job.Id);
+  return await qbo.getInvoicePdf(job.data.Id);
 })
 
 downloadQ.on('completed', (jobId, result) => {
