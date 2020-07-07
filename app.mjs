@@ -17,11 +17,7 @@ const downloadQ = new Queue('download', REDIS_URL);
 downloadQ.process(async (job) => {
   console.log(`Job received! ${job}`)
   // job is just a json object containing the invoice ID
-  try {
-    let docBuffer = await qbo.getInvoicePdf({"Id": job.Id});
-    console.log("download completed!")
-    return docBuffer
-  } catch(err) { console.log(err) }
+    return qbo.getInvoicePdf({"Id": job.Id});
 })
 
 // deploy test
@@ -70,7 +66,7 @@ app.get('/job/:id', async (req, res) => {
   }
 });
 
-downloadQ.on('global:completed', (jobId, result) => {
+downloadQ.on('completed', (jobId, result) => {
   console.log(`Job ${jobId} completed! Sending via Telegram now!`)
   tel.sendDoc(result)  
 })

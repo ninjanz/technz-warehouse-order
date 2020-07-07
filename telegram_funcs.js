@@ -8,7 +8,7 @@ async function sendDoc(doc) {
     opts = { "contentType": "application/pdf" }
 
     await bot.sendMessage("-400162180", "doc get")
-    await bot.sendDocument("-400162180", doc, {}, opts)
+    await bot.sendDocument("-400162180", doc, {})
     console.log("doc sent!")
 }
 
