@@ -4,7 +4,7 @@ import Heroku from 'heroku-client';
 const heroku = new Heroku({ token: process.env.HEROKU_API_TOKEN })
 const HEROKU_VARS_URL = process.env.HEROKU_VARS_URL
 
-var qbo = new QuickBooks(process.env.QUICKBOOKS_CLIENT,
+const qbo = new QuickBooks(process.env.QUICKBOOKS_CLIENT,
     process.env.QUICKBOOKS_SECRET,
     process.env.QUICKBOOKS_ACCESS_TOKEN,
     false, // no token secret for oAuth 2.0
