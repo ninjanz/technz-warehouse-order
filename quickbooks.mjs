@@ -23,6 +23,7 @@ async function createInvoice(payload,) {
         let queryObj = await Promise.all(
             [qbo.findItems({ "Sku": skuArr }),
             qbo.findCustomers({ "DisplayName": payload.customer })])
+        //if (queryObj)
         let lineObj = await createLineObj(payload, queryObj[0].QueryResponse.Item)
         let invoiceObj = {
             "CustomerRef": {
@@ -32,14 +33,17 @@ async function createInvoice(payload,) {
         }
         let inv_response = await qbo.createInvoice(invoiceObj)
         let send_response = await qbo.sendInvoicePdf(inv_response.Id, "plastic@nzcurryhouse.com")
-        
-        console.log("Sent Invoice ", inv_response.Id, "by ", send_response.DeliveryInfo.DeliveryType, "at ", send_response.DeliveryInfo.DeliveryTime)
+
+
+        return { "Id": inv_response.Id, 
+                "type": send_response.DeliveryInfo.DeliveryType, 
+                "time": send_response.DeliveryInfo.DeliveryTime };
     } catch (err) {
         console.log(err)
     }
 
     // print no stock invoice here
-    if (lineObj.rejArr.length > 0) console.log("rejected orders: \n", lineObj.rejArr)
+    if (lineObj.rejArr.length > 0) console.log("rejected orders: \n", lineObj.rejArr); 
 };
 
 async function createLineObj(orderObj, stockItems) {

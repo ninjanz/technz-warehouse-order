@@ -13,6 +13,19 @@ bot.onText(/\/bookmark/, (msg, match) => {
     else {
         bot.sendMessage(chatId, "type something pls")
     }
+})
+
+bot.onText(/\/fetch/, (msg, match) => {
+    const chatId = msg.chat.id;
+    const input = match.input;
+
+    if (input !== undefined) {
+        bot.sendMessage(chatId, input)
+    }
+
+    else {
+        bot.sendMessage(chatId, "type something pls")
+    }
 }) 
 
 async function sendDoc(doc) {
@@ -20,9 +33,11 @@ async function sendDoc(doc) {
     //console.log(await FileType.fromBuffer(doc))
     //opts = { "contentType": "application/pdf" }
 
-    await bot.sendMessage("-400162180", "doc get")
+    //await bot.sendMessage("-400162180", "doc get")
     await bot.sendDocument("-400162180", doc, {})
     console.log("doc sent!")
 }
 
-export { bot }
+const CHAT_ID = '-400162180'
+
+export { bot, CHAT_ID }

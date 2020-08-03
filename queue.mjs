@@ -1,7 +1,7 @@
 import Queue from 'bull';
 
 import { qbo } from './quickbooks.mjs';
-import { bot } from './comms.mjs'
+import { bot, CHAT_ID } from './comms.mjs'
 
 const REDIS_URL = process.env.REDIS_URL || 'redis://127.0.0.1:6379'
 
@@ -15,7 +15,7 @@ downloadQ.process(async (job) => {
 
 downloadQ.on('completed', (jobId, result) => {
   console.log(`Job ${jobId} completed! Sent via Telegram!`)
-  bot.sendDocument("-400162180", result)
+  bot.sendDocument(CHAT_ID, result)
 })
 
 export { downloadQ };

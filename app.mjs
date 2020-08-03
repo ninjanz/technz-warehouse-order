@@ -22,10 +22,15 @@ app.get('/company', (req, res) => {
 })
 
 // create invoice using this route
-app.post('/create-invoice', function (req, res) {
-  updateToken()
-  .then(createInvoice(req.body))
-  .catch((err) => { res.send(err); console.log(err); })
+app.post('/create-invoice', async (req, res) => {
+  console.log(req.body)
+  try {
+    await updateToken()
+    let _res = await createInvoice(req.body)
+    console.log("Sent Invoice ", _res.Id, "by ", _res.type, "at ", _res.time)
+
+    return res.status(200).send('OK')
+  } catch(err) { res.send(err); console.log(err); }
 })
 
 app.post('/send-doc', async (req, res) => {
