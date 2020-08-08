@@ -124,10 +124,10 @@ async function _createOrderPdf(_accepted, _rejected) {
     console.log(arr)
     console.log(arr2)
 
-    doc.text("ORDER FORM");
+    doc.text("ORDER FORM", 100, 100);
 
     if (arr.length > 0) {
-        doc.text('Rejected Items')
+        //doc.text('Rejected Items', 100, 200)
         doc.autoTable({
             columns: [
                 { header: 'Item' },
@@ -138,7 +138,7 @@ async function _createOrderPdf(_accepted, _rejected) {
     }
 
     if (arr2.length > 0) {
-        doc.text('Accepted Items')
+        //doc.text('Accepted Items')
         doc.autoTable({
             columns: [
                 { header: 'Item' },
