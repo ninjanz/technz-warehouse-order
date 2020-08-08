@@ -2,6 +2,8 @@ import QuickBooks from 'node-quickbooks-promise';
 import Heroku from 'heroku-client';
 
 import 'jspdf-autotable';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url)
 
 
 const heroku = new Heroku({ token: process.env.HEROKU_API_TOKEN })
