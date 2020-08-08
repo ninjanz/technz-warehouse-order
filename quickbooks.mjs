@@ -127,8 +127,12 @@ async function _createOrderPdf(_accepted, _rejected) {
 
     //let arr = [], arr2 = [];
     //const doc = new jsPDF()
-
-    const printer = new PdfPrinter();
+    const fonts = {
+        normal: fontPath('Roboto_regular.ttf'),
+        bold: fontPath('Roboto-Medium.ttf'),
+        italics: fontPath('Roboto-Italic.ttf'),
+    }
+    const printer = new PdfPrinter(fonts);
 
     //_rejected.forEach((group) => { arr.push([group.sku, group.quantity]) })
     //_accepted.forEach((group) => { arr2.push([group.ItemRef.value, group.Qty]) })
