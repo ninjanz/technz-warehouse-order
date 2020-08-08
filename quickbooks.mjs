@@ -8,7 +8,7 @@ import 'jspdf-autotable';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url)*/
 
-import PdfPrinter from 'pdfmake';
+import * as PDF from 'pdfmake';
 //import { path } from 'pdfkit/js/mixins/vector';
 
 const heroku = new Heroku({ token: process.env.HEROKU_API_TOKEN })
@@ -133,11 +133,11 @@ async function _createOrderPdf(_accepted, _rejected) {
         return path.resolve('node_modules', 'pdfmake', 'test-env', 'tests', 'fonts', 'file')
     }*/
     const fonts = {
-        /*Roboto: {
+        Roboto: {
             normal: fontPath('Roboto-Regular.ttf'),
             bold: fontPath('Roboto-Medium.ttf'),
             italics: fontPath('Roboto-Italic.ttf')
-        }*/
+        },
         Helvetica: {
             normal: 'Helvetica',
             bold: 'Helvetica-Bold',
@@ -145,7 +145,7 @@ async function _createOrderPdf(_accepted, _rejected) {
             bolditalics: 'Helvetica-BoldOblique'
         }
     }
-    const printer = new PdfPrinter(fonts);
+    const printer = new PDF.PdfPrinter(fonts);
 
     //_rejected.forEach((group) => { arr.push([group.sku, group.quantity]) })
     //_accepted.forEach((group) => { arr2.push([group.ItemRef.value, group.Qty]) })
