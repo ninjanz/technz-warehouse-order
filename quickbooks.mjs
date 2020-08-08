@@ -117,6 +117,8 @@ async function _createOrderPdf(_accepted, _rejected) {
     console.log(arr)
     console.log(arr2)
 
+    doc.text("ORDER FORM");
+
     if (arr.length > 0) {
         doc.text('Rejected Items')
         doc.autoTable({
