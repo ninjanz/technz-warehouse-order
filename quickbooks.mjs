@@ -126,6 +126,10 @@ async function _createOrderPdf(_accepted, _rejected) {
         body: arr2,
     })
 
+    delete global.window;
+    delete global.navigator;
+    delete global.btoa;
+
     return doc.output('arraybuffer');
 }
 
