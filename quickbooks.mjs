@@ -107,8 +107,8 @@ async function _createOrderPdf(_accepted, _rejected) {
     let arr = [], arr2 = [];
     const doc = new jsPDF()
 
-    _rejected.forEach( (group) => {  arr.push([group.sku, group.quantity]) })
-    _accepted.forEach( (group) => {  arr2.push([group.ItemRef.value, group.Qty]) })    
+    _rejected.forEach((group) => { arr.push([group.sku, group.quantity]) })
+    _accepted.forEach((group) => { arr2.push([group.ItemRef.value, group.Qty]) })
 
     /*async () => {
         await _rejected.forEach( (group) => {  arr.push([group.sku, group.quantity]) })
@@ -118,21 +118,27 @@ async function _createOrderPdf(_accepted, _rejected) {
     console.log(arr)
     console.log(arr2)
 
-    doc.autoTable({
-        columns: [
-            { header: 'Item' },
-            { header: 'Quantity' }
-        ],
-        body: arr,
-    })
+    if (arr.length > 0) {
+        doc.text('Rejected Items')
+        doc.autoTable({
+            columns: [
+                { header: 'Item' },
+                { header: 'Quantity' }
+            ],
+            body: arr,
+        })
+    }
 
-    doc.autoTable({
-        columns: [
-            { header: 'Item' },
-            { header: 'Quantity' }
-        ],
-        body: arr2,
-    })
+    if (arr2.length > 0) {
+        doc.text('Accepted Items')
+        doc.autoTable({
+            columns: [
+                { header: 'Item' },
+                { header: 'Quantity' }
+            ],
+            body: arr2,
+        })
+    }
 
     delete global.window;
     delete global.navigator;
