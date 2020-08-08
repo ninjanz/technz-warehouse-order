@@ -107,13 +107,13 @@ async function _createOrderPdf(_accepted, _rejected) {
     let arr = [], arr2 = [];
     const doc = new jsPDF()
 
-    _rejected.forEach((group) => { arr.push([group.sku, group.quantity]) })
-    _accepted.forEach((group) => { arr2.push([group.ItemRef.value, group.Qty]) })
+    //_rejected.forEach((group) => { arr.push([group.sku, group.quantity]) })
+    //_accepted.forEach((group) => { arr2.push([group.ItemRef.value, group.Qty]) })
 
-    /*async () => {
+    async () => {
         await _rejected.forEach( (group) => {  arr.push([group.sku, group.quantity]) })
         await _accepted.forEach( (group) => {  arr2.push([group.ItemRef.value, group.Qty]) })    
-    }*/
+    }
 
     console.log(arr)
     console.log(arr2)
