@@ -1,6 +1,6 @@
 import QuickBooks from 'node-quickbooks-promise';
 import Heroku from 'heroku-client';
-import 'path';
+import * as path from 'path';
 
 /*import jsPDF from 'jspdf/dist/jspdf.node.debug';
 import 'jspdf-autotable';
