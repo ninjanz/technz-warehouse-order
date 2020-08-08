@@ -1,9 +1,11 @@
 import QuickBooks from 'node-quickbooks-promise';
 import Heroku from 'heroku-client';
-import autoTable from 'jspdf-autotable';
 
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url)
+import jsPDF from 'jspdf/dist/jspdf.node.debug';
+import 'jspdf-autotable';
+
+/*import { createRequire } from 'module';
+const require = createRequire(import.meta.url)*/
 
 
 const heroku = new Heroku({ token: process.env.HEROKU_API_TOKEN })
@@ -98,11 +100,11 @@ async function _filterQuery(_payload, _stock) {
 
 async function _createOrderPdf(_accepted, _rejected) {
     //write pdf
-    global.window = { document: { createElementNS: () => { return {} } } };
+    /*global.window = { document: { createElementNS: () => { return {} } } };
     global.navigator = {};
-    global.btoa = () => { };
+    global.btoa = () => { };*/
 
-    const jsPDF = require('jspdf/dist/jspdf.node.min');
+    //const jsPDF = require('jspdf/dist/jspdf.node.min');
     
 
     let arr = [], arr2 = [];
@@ -129,7 +131,7 @@ async function _createOrderPdf(_accepted, _rejected) {
 
     if (arr.length > 0) {
         //doc.text('Rejected Items', 100, 200)
-        autoTable(doc,{
+        doc.autoTable({
             columns: [
                 { header: 'Item' },
                 { header: 'Quantity' }
@@ -140,7 +142,7 @@ async function _createOrderPdf(_accepted, _rejected) {
 
     if (arr2.length > 0) {
         //doc.text('Accepted Items')
-        autoTable(doc,{
+        doc.autoTable({
             columns: [
                 { header: 'Item' },
                 { header: 'Quantity' }
@@ -149,9 +151,9 @@ async function _createOrderPdf(_accepted, _rejected) {
         })
     }
 
-    delete global.window;
+    /*delete global.window;
     delete global.navigator;
-    delete global.btoa;
+    delete global.btoa;*/
 
     return doc.output('arraybuffer');
 }
