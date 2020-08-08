@@ -129,14 +129,20 @@ async function _createOrderPdf(_accepted, _rejected) {
 
     //let arr = [], arr2 = [];
     //const doc = new jsPDF()
-    function fontPath(file) {
+    /*function fontPath(file) {
         return path.resolve('node_modules', 'pdfmake', 'test-env', 'tests', 'fonts', 'file')
-    }
+    }*/
     const fonts = {
-        Roboto: {
+        /*Roboto: {
             normal: fontPath('Roboto-Regular.ttf'),
             bold: fontPath('Roboto-Medium.ttf'),
             italics: fontPath('Roboto-Italic.ttf')
+        }*/
+        Helvetica: {
+            normal: 'Helvetica',
+            bold: 'Helvetica-Bold',
+            italics: 'Helvetica-Oblique',
+            bolditalics: 'Helvetica-BoldOblique'
         }
     }
     const printer = new PdfPrinter(fonts);
