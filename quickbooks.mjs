@@ -1,5 +1,6 @@
 import QuickBooks from 'node-quickbooks-promise';
 import Heroku from 'heroku-client';
+import 'path';
 
 /*import jsPDF from 'jspdf/dist/jspdf.node.debug';
 import 'jspdf-autotable';
@@ -8,6 +9,7 @@ import { createRequire } from 'module';
 const require = createRequire(import.meta.url)*/
 
 import PdfPrinter from 'pdfmake';
+import { path } from 'pdfkit/js/mixins/vector';
 
 const heroku = new Heroku({ token: process.env.HEROKU_API_TOKEN })
 const HEROKU_VARS_URL = process.env.HEROKU_VARS_URL
@@ -127,6 +129,9 @@ async function _createOrderPdf(_accepted, _rejected) {
 
     //let arr = [], arr2 = [];
     //const doc = new jsPDF()
+    function fontPath(file) {
+        return path.resolve('pdfmake', 'test-env', 'tests', 'fonts', 'file')
+    }
     const fonts = {
         normal: fontPath('Roboto_regular.ttf'),
         bold: fontPath('Roboto-Medium.ttf'),
