@@ -9,7 +9,7 @@ import { createRequire } from 'module';
 const require = createRequire(import.meta.url)*/
 
 import PdfPrinter from 'pdfmake';
-import { path } from 'pdfkit/js/mixins/vector';
+//import { path } from 'pdfkit/js/mixins/vector';
 
 const heroku = new Heroku({ token: process.env.HEROKU_API_TOKEN })
 const HEROKU_VARS_URL = process.env.HEROKU_VARS_URL
