@@ -130,7 +130,7 @@ async function _createOrderPdf(_accepted, _rejected) {
     //let arr = [], arr2 = [];
     //const doc = new jsPDF()
     function fontPath(file) {
-        return path.resolve('pdfmake', 'test-env', 'tests', 'fonts', 'file')
+        return path.resolve('node_modules', 'pdfmake', 'test-env', 'tests', 'fonts', 'file')
     }
     const fonts = {
         Roboto: {
