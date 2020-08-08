@@ -133,9 +133,11 @@ async function _createOrderPdf(_accepted, _rejected) {
         return path.resolve('pdfmake', 'test-env', 'tests', 'fonts', 'file')
     }
     const fonts = {
-        normal: fontPath('Roboto_regular.ttf'),
-        bold: fontPath('Roboto-Medium.ttf'),
-        italics: fontPath('Roboto-Italic.ttf'),
+        Roboto: {
+            normal: fontPath('Roboto-Regular.ttf'),
+            bold: fontPath('Roboto-Medium.ttf'),
+            italics: fontPath('Roboto-Italic.ttf')
+        }
     }
     const printer = new PdfPrinter(fonts);
 
