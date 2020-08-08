@@ -29,6 +29,8 @@ bot.onText(/\/fetch/, (msg, match) => {
     }
 }) */
 
-const CHAT_ID = '-400162180'
+const CHAT_ID_2 = '-400162180'
+
+const CHAT_ID = '-371528263'
 
 export { bot, CHAT_ID }
