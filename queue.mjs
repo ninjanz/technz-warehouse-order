@@ -42,6 +42,7 @@ invoiceQ.process(async (job) => {
 
 invoiceQ.on('completed', (jobId, message) => {
   console.log(message)
+  bot.sendMessage(CHAT_ID, message)
 })
 
 
