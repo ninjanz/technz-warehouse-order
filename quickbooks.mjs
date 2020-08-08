@@ -111,14 +111,14 @@ async function _createOrderPdf(_accepted, _rejected) {
     //_accepted.forEach((group) => { arr2.push([group.ItemRef.value, group.Qty]) })
     console.log(_accepted)
     console.log(_rejected)
-    _rejected.forEach((object) => { 
+    await _rejected.forEach((object) => { 
         console.log(object)
         arr.push([object.sku, object.quantity])
 
     })
-    _accepted.forEach((group) => {
+    await _accepted.forEach((group) => {
         console.log(group)
-        arr2.push([group.ItemRef.value, group.Qty]) 
+        arr2.push([group.SalesItemLineDetail.ItemRef.value, group.Qty]) 
     })    
 
     console.log(arr)
