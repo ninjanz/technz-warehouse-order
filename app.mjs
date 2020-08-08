@@ -1,8 +1,8 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 
-import { qbo, createInvoice, updateToken } from "./quickbooks.mjs";
-import { downloadQ } from "./queue.mjs";
+//import { qbo, createInvoice, updateToken } from "./quickbooks.mjs";
+import { invoiceQ } from "./queue.mjs";
 
 // setup express with body-parser
 const app = express()
