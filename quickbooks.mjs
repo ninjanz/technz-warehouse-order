@@ -60,9 +60,9 @@ async function _queryPayload(_payload) {
     let _stock = await qbo.findItems({ "Sku": _skus })
     _stock = _stock.QueryResponse.Item
 
-    let _customer = await qbo.findCustomers({ "DisplayName": _payload.customer })
-    _customer = _customer.QueryResponse.Customer[0].Id
-    
+    let _customerID = await qbo.findCustomers({ "DisplayName": _payload.customer })
+    _customerID = _customer.QueryResponse.Customer[0].Id
+
     return { _customerID, _stock }
 }
 
