@@ -57,9 +57,12 @@ async function processOrder(payload,) {
 
 async function _queryPayload(_payload) {
     let _skus = _payload.items.map(item => item.sku)
-    let _stock = await qbo.findItems({ "Sku": _skus }).QueryResponse.Item
-    let _customer = await qbo.findCustomers({ "DisplayName": _payload.customer }).QueryResponse.Customer[0].Id
+    let _stock = await qbo.findItems({ "Sku": _skus })
+    _stock = _stock.QueryResponse.Item
 
+    let _customer = await qbo.findCustomers({ "DisplayName": _payload.customer })
+    _customer = _customer.QueryResponse.Customer[0].Id
+    
     return { _customerID, _stock }
 }
 
@@ -94,7 +97,7 @@ async function _filterQuery(_payload, _stock) {
 async function _createOrderPdf(_accepted, _rejected) {
     //write pdf
     const jsPDF = require('jspdf');
-    
+
 
     arr = [], arr2 = [];
     const doc = new jsPDF()
