@@ -1,12 +1,13 @@
 import QuickBooks from 'node-quickbooks-promise';
 import Heroku from 'heroku-client';
 
-import jsPDF from 'jspdf/dist/jspdf.node.debug';
+/*import jsPDF from 'jspdf/dist/jspdf.node.debug';
 import 'jspdf-autotable';
 
-/*import { createRequire } from 'module';
+import { createRequire } from 'module';
 const require = createRequire(import.meta.url)*/
 
+import PdfPrinter from 'pdfmake';
 
 const heroku = new Heroku({ token: process.env.HEROKU_API_TOKEN })
 const HEROKU_VARS_URL = process.env.HEROKU_VARS_URL
@@ -57,8 +58,6 @@ async function processOrder(payload,) {
     //if (lineObj.rejArr.length > 0) console.log("rejected orders: \n", lineObj.rejArr);
 };
 
-
-
 async function _queryPayload(_payload) {
     let _skus = _payload.items.map(item => item.sku)
     let _stock = await qbo.findItems({ "Sku": _skus })
@@ -99,63 +98,97 @@ async function _filterQuery(_payload, _stock) {
 }
 
 async function _createOrderPdf(_accepted, _rejected) {
+
+    let docDefinition = {
+        content: [
+            {
+                text: 'Order Form',
+                style: 'header'
+            },
+        ],
+        styles: {
+            header: {
+                fontSize: 18,
+                bold: true
+            },
+            subheader: {
+                fontSize: 14,
+                bold: true
+            }
+        }
+    }
     //write pdf
     /*global.window = { document: { createElementNS: () => { return {} } } };
     global.navigator = {};
     global.btoa = () => { };*/
 
     //const jsPDF = require('jspdf/dist/jspdf.node.min');
-    
 
-    let arr = [], arr2 = [];
-    const doc = new jsPDF()
+
+    //let arr = [], arr2 = [];
+    //const doc = new jsPDF()
+
+    const printer = new PdfPrinter();
 
     //_rejected.forEach((group) => { arr.push([group.sku, group.quantity]) })
     //_accepted.forEach((group) => { arr2.push([group.ItemRef.value, group.Qty]) })
     console.log(_accepted)
     console.log(_rejected)
-    await _rejected.forEach((object) => { 
-        console.log(object)
-        arr.push([object.sku, object.quantity])
 
-    })
-    await _accepted.forEach((group) => {
-        console.log(group)
-        arr2.push([group.SalesItemLineDetail.ItemRef.value, group.SalesItemLineDetail.Qty]) 
-    })    
 
-    console.log(arr)
-    console.log(arr2)
+    if (_accepted.length > 0) {
+        let _x = [
+            {
+                text: 'Accepted Items',
+                style: 'subheader'
+            },
+            {
+                table: {
+                    body: [
+                        ['Items', 'Quantity']
+                    ]
+                }
+            }]
 
-    doc.text("ORDER FORM", 100, 100);
-
-    if (arr.length > 0) {
-        //doc.text('Rejected Items', 100, 200)
-        doc.autoTable({
-            columns: [
-                { header: 'Item' },
-                { header: 'Quantity' }
-            ],
-            body: arr,
+        await _accepted.forEach((group) => {
+            console.log(group)
+            _x[1].table.body.push([group.SalesItemLineDetail.ItemRef.value, group.SalesItemLineDetail.Qty])
         })
+
+        docDefinition.content.push(..._x)
     }
 
-    if (arr2.length > 0) {
-        //doc.text('Accepted Items')
-        doc.autoTable({
-            columns: [
-                { header: 'Item' },
-                { header: 'Quantity' }
-            ],
-            body: arr2,
+    if (_rejected.length > 0) {
+        let _x = [
+            {
+                text: 'Rejected Items',
+                style: 'subheader'
+            },
+            {
+                table: {
+                    body: [
+                        ['Items', 'Quantity']
+                    ]
+                }
+            }]
+
+        await _accepted.forEach((group) => {
+            console.log(group)
+            _x[1].table.body.push([group.sku, group.quantity])
         })
+
+        docDefinition.content.push(..._x)
     }
+
 
     /*delete global.window;
     delete global.navigator;
     delete global.btoa;*/
 
-    return doc.output('arraybuffer');
+
+    const doc = printer.createPdfKitDocument(docDefinition)
+
+    return doc
 }
 
 async function updateToken() {
