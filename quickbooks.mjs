@@ -116,7 +116,7 @@ async function _createOrderPdf(_accepted, _rejected) {
         body: arr2,
     })
 
-    return doc.output('arraybuffer')
+    return doc.output('arraybuffer');
 }
 
 async function updateToken() {
