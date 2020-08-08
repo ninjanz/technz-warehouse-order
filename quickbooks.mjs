@@ -98,8 +98,11 @@ async function _filterQuery(_payload, _stock) {
 
 async function _createOrderPdf(_accepted, _rejected) {
     //write pdf
-    const jsPDF = require('jspdf');
+    global.window = { document: { createElementNS: () => { return {} } } };
+    global.navigator = {};
+    global.btoa = () => { };
 
+    const jsPDF = require('jspdf/dist/jspdf.node.min');
 
     arr = [], arr2 = [];
     const doc = new jsPDF()
