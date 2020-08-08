@@ -1,8 +1,14 @@
 import QuickBooks from 'node-quickbooks-promise';
 import Heroku from 'heroku-client';
 
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+
+
 const heroku = new Heroku({ token: process.env.HEROKU_API_TOKEN })
 const HEROKU_VARS_URL = process.env.HEROKU_VARS_URL
+
+const STORE_EMAIL = 'plastic@nzcurryhouse.com'
 
 const qbo = new QuickBooks(process.env.QUICKBOOKS_CLIENT,
     process.env.QUICKBOOKS_SECRET,
@@ -15,38 +21,141 @@ const qbo = new QuickBooks(process.env.QUICKBOOKS_CLIENT,
     '2.0', //oAuth version
     process.env.QUICKBOOKS_REFRESH_TOKEN);
 
-async function createInvoice(payload,) {
+async function processOrder(payload,) {
+
+    // call funcs which create the invoice
+    // 1 search items and customer -- /
+    // 2 filter rejected and return both arrays THEN create line object --/
+    // 3 create invoice using params -- /
+    // 4 create order pdf using params -- /
+    // 5 send invoice via email (linked to 4) -- /
+    // 6 return invoice id and pdf -- /
     // create the invoice with all the required params
 
     try {
-        let skuArr = payload.items.map(item => item.sku)
-        let queryObj = await Promise.all(
-            [qbo.findItems({ "Sku": skuArr }),
-            qbo.findCustomers({ "DisplayName": payload.customer })])
-        //if (queryObj)
-        let lineObj = await createLineObj(payload, queryObj[0].QueryResponse.Item)
-        let invoiceObj = {
+        let _queryRes = await _queryPayload(payload)
+        let _filterRes = await _filterQuery(payload, _queryRes._stock)
+
+        //let lineObj = await createLineObj(payload, queryObj[0])
+        let _invParams = {
             "CustomerRef": {
-                "value": queryObj[1].QueryResponse.Customer[0].Id,
+                "value": _queryRes._customerID,
             },
-            "Line": lineObj.lineArr
+            "Line": _filterRes._line
         }
-        let inv_response = await qbo.createInvoice(invoiceObj)
-        let send_response = await qbo.sendInvoicePdf(inv_response.Id, "plastic@nzcurryhouse.com")
+        let _invRes = await qbo.createInvoice(_invParams)
+        let _sendEmail = await qbo.sendInvoicePdf(_invRes.Id, STORE_EMAIL)
+        let _orderPdf = await _createOrderPdf(_filterRes._line, _filterRes._rej)
 
-
-        return { "Id": inv_response.Id, 
-                "type": send_response.DeliveryInfo.DeliveryType, 
-                "time": send_response.DeliveryInfo.DeliveryTime };
-    } catch (err) {
-        console.log(err)
-    }
+        return { invoice: _sendEmail, order: _orderPdf };
+    } catch (err) { console.log(err) };
 
     // print no stock invoice here
-    if (lineObj.rejArr.length > 0) console.log("rejected orders: \n", lineObj.rejArr); 
+    //if (lineObj.rejArr.length > 0) console.log("rejected orders: \n", lineObj.rejArr);
 };
 
-async function createLineObj(orderObj, stockItems) {
+
+
+async function _queryPayload(_payload) {
+    let _skus = _payload.items.map(item => item.sku)
+    let _stock = await qbo.findItems({ "Sku": _skus }).QueryResponse.Item
+    let _customer = await qbo.findCustomers({ "DisplayName": _payload.customer }).QueryResponse.Customer[0].Id
+
+    return { _customerID, _stock }
+}
+
+async function _filterQuery(_payload, _stock) {
+    let _line = [], _rej = []
+
+    _stock.forEach(element => {
+        _payload.items.forEach(subElement => {
+            if (subElement.sku === element.Sku) {
+                // check if there is enough quantity
+                if (element["QtyOnHand"] >= subElement["quantity"]) {
+                    let lineBase = {
+                        "DetailType": "SalesItemLineDetail",
+                        "Amount": element["UnitPrice"] * subElement["quantity"],
+                        "SalesItemLineDetail": {
+                            "ItemRef": {
+                                "value": element.Id,
+                            },
+                            "Qty": subElement["quantity"]
+                        }
+                    }
+
+                    _line.push(lineBase)
+                } else _rej.push(subElement)
+            }
+        })
+    })
+
+    return { _line, _rej }
+}
+
+async function _createOrderPdf(_accepted, _rejected) {
+    //write pdf
+    arr = [], arr2 = [];
+    const doc = new jsPDF()
+
+    _rejected.forEach((group) => {arr.push([group.sku, group.quantity])})
+    _accepted.forEach((group) => { arr2.push([group.ItemRef.value, group.Qty])})
+    
+    doc.autoTable({
+        columns: [
+            { header: 'Item' },
+            { header: 'Quantity'}
+        ],
+        body: arr,
+    })
+
+    doc.autoTable({
+        columns: [
+            { header: 'Item' },
+            { header: 'Quantity' }
+        ],
+        body: arr2,
+    })
+
+    return doc.output('arraybuffer')
+}
+
+async function updateToken() {
+    let timeNow = new Date()
+    let lastRefresh = process.env.QUICKBOOKS_LAST_REFRESH === "" ? new Date(timeNow - (60 * 1000 * 60)) : new Date(process.env.QUICKBOOKS_LAST_REFRESH)
+    let timeDiff = (timeNow - lastRefresh) / (1000 * 60)
+
+    console.log("timeNow: ", timeNow, ", lastRefresh: ", lastRefresh.toISOString(), ", timeDiff: ", timeDiff)
+
+    if (timeDiff >= 55) {
+        try {
+            let refresh_response = await qbo.refreshAccessToken()
+
+            let dateNow = new Date()
+            //console.log("Access Token Refreshed at: ", dateNow.toString(), " / ", dateNow.getTime())
+            //console.log("Refresh Response: ", refresh_response)
+
+            await heroku.patch(HEROKU_VARS_URL, {
+                body: {
+                    QUICKBOOKS_ACCESS_TOKEN: refresh_response.access_token,
+                    QUICKBOOKS_REFRESH_TOKEN: refresh_response.refresh_token,
+                    QUICKBOOKS_LAST_REFRESH: dateNow
+                }
+            })
+        } catch (err) { console.log("Error at app.get/update-token: ", err) }
+    } else console.log("token update not required")
+}
+
+export { qbo, processOrder, updateToken };
+
+
+
+
+
+
+
+
+
+/*async function createLineObj(orderObj, stockItems) {
     let lineArr = []
     let rejArr = []
 
@@ -76,32 +185,4 @@ async function createLineObj(orderObj, stockItems) {
         "lineArr": lineArr,
         "rejArr": rejArr
     }
-}
-
-async function updateToken() {
-    let timeNow = new Date()
-    let lastRefresh = process.env.QUICKBOOKS_LAST_REFRESH === "" ? new Date(timeNow - (60 * 1000 * 60)) : new Date(process.env.QUICKBOOKS_LAST_REFRESH)
-    let timeDiff = (timeNow - lastRefresh) / (1000 * 60)
-
-    console.log("timeNow: ", timeNow, ", lastRefresh: ", lastRefresh.toISOString(), ", timeDiff: ", timeDiff)
-
-    if (timeDiff >= 55) {
-        try {
-            let refresh_response = await qbo.refreshAccessToken()
-
-            let dateNow = new Date()
-            console.log("Access Token Refreshed at: ", dateNow.toISOString(), " / ", dateNow.getTime())
-            console.log("Refresh Response: ", refresh_response)
-
-            await heroku.patch(HEROKU_VARS_URL, {
-                body: {
-                    QUICKBOOKS_ACCESS_TOKEN: refresh_response.access_token,
-                    QUICKBOOKS_REFRESH_TOKEN: refresh_response.refresh_token,
-                    QUICKBOOKS_LAST_REFRESH: dateNow
-                }
-            })
-        } catch (err) { console.log("Error at app.get/update-token: ", err) }
-    } else console.log("token update not required")
-}
-
-export { qbo, createInvoice, updateToken };
+}*/
