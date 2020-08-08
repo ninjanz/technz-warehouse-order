@@ -1,7 +1,6 @@
 import QuickBooks from 'node-quickbooks-promise';
 import Heroku from 'heroku-client';
 
-import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
 
@@ -94,10 +93,8 @@ async function _filterQuery(_payload, _stock) {
 
 async function _createOrderPdf(_accepted, _rejected) {
     //write pdf
-
-    global.window = { document: { createElementNS: () => { return {} } } };
-    global.navigator = {};
-    global.btoa = () => { };
+    const jsPDF = require('jspdf');
+    
 
     arr = [], arr2 = [];
     const doc = new jsPDF()
