@@ -94,16 +94,21 @@ async function _filterQuery(_payload, _stock) {
 
 async function _createOrderPdf(_accepted, _rejected) {
     //write pdf
+
+    global.window = { document: { createElementNS: () => { return {} } } };
+    global.navigator = {};
+    global.btoa = () => { };
+
     arr = [], arr2 = [];
     const doc = new jsPDF()
 
-    _rejected.forEach((group) => {arr.push([group.sku, group.quantity])})
-    _accepted.forEach((group) => { arr2.push([group.ItemRef.value, group.Qty])})
-    
+    _rejected.forEach((group) => { arr.push([group.sku, group.quantity]) })
+    _accepted.forEach((group) => { arr2.push([group.ItemRef.value, group.Qty]) })
+
     doc.autoTable({
         columns: [
             { header: 'Item' },
-            { header: 'Quantity'}
+            { header: 'Quantity' }
         ],
         body: arr,
     })
