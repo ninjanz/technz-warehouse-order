@@ -1,7 +1,7 @@
 import QuickBooks from 'node-quickbooks-promise';
 import Heroku from 'heroku-client';
+import autoTable from 'jspdf-autotable';
 
-import 'jspdf-autotable';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url)
 
@@ -103,6 +103,7 @@ async function _createOrderPdf(_accepted, _rejected) {
     global.btoa = () => { };
 
     const jsPDF = require('jspdf/dist/jspdf.node.min');
+    
 
     let arr = [], arr2 = [];
     const doc = new jsPDF()
@@ -128,7 +129,7 @@ async function _createOrderPdf(_accepted, _rejected) {
 
     if (arr.length > 0) {
         //doc.text('Rejected Items', 100, 200)
-        doc.autoTable({
+        autoTable(doc,{
             columns: [
                 { header: 'Item' },
                 { header: 'Quantity' }
@@ -139,7 +140,7 @@ async function _createOrderPdf(_accepted, _rejected) {
 
     if (arr2.length > 0) {
         //doc.text('Accepted Items')
-        doc.autoTable({
+        autoTable(doc,{
             columns: [
                 { header: 'Item' },
                 { header: 'Quantity' }
