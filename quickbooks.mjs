@@ -9,6 +9,7 @@ import { createRequire } from 'module';
 const require = createRequire(import.meta.url)*/
 
 import PdfPrinter from 'pdfmake';
+import OutputDocument from './OutputDocument.js'
 //import OutputDocument from 'pdfmake/src/OutputDocument';
 //import { table } from 'console';
 //import { path } from 'pdfkit/js/mixins/vector';
@@ -197,33 +198,9 @@ async function _createOrderPdf(_accepted, _rejected) {
 
 
     const doc = printer.createPdfKitDocument(docDefinition)
-    //const doc64 = new OutputDocument(doc)
+    const doc64 = new OutputDocument(doc)
 
-    function getBuffer(pdf) {
-		return new Promise((resolve, reject) => {
-			pdf.then(stream => {
-
-				let chunks = [];
-				let result;
-				stream.on('readable', () => {
-					let chunk;
-					while ((chunk = stream.read(this.bufferSize)) !== null) {
-						chunks.push(chunk);
-					}
-				});
-				stream.on('end', () => {
-					result = Buffer.concat(chunks);
-					resolve(result);
-				});
-				stream.end();
-
-			}, result => {
-				reject(result);
-			});
-		});
-	}
-
-    return getBuffer(doc)
+    return doc64.getStream()
 }
 
 async function createTable(someArray, tableHeader) {
