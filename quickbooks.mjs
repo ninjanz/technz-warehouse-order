@@ -197,13 +197,14 @@ async function _createOrderPdf(_accepted, _rejected) {
     delete global.btoa;*/
 
 
-    const doc = printer.createPdfKitDocument(docDefinition)
-    console.log(doc)
-    const doc64 = new OutputDocument(doc)
-    console.log(doc64)
+    const doc = await printer.createPdfKitDocument(docDefinition)
+    //console.log(doc)
+    //const doc64 = new OutputDocument(doc)
+    //console.log(doc64)
     //let doc_buffer = await doc64.getBuffer()
+    doc.end()
 
-    return doc64
+    return doc
 }
 
 async function createTable(someArray, tableHeader) {
