@@ -26,7 +26,7 @@ invoiceQ.process(async (job) => {
     await updateToken()
 
     let _order = await processOrder(job.data)
-    console.log(_order);
+    //console.log(_order);
     let _teleRes = await bot.sendDocument(CHAT_ID, _order.order)
     //let _sendEmail = await qbo.sendInvoicePdf(_inv.Id, STORE_EMAIL)
     //let _pdf = await qbo.getInvoicePdf(_inv.Id);
