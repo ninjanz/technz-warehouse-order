@@ -1,4 +1,4 @@
-class OutputDocument {
+export class OutputDocument {
 
 	/**
 	 * @param {Promise<object>} pdfDocumentPromise
@@ -69,5 +69,3 @@ class OutputDocument {
 	}
 
 }
-
-export { OutputDocument };
