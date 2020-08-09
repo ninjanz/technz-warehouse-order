@@ -27,7 +27,7 @@ invoiceQ.process(async (job) => {
 
     let _order = await processOrder(job.data)
     console.log(_order);
-    let _teleRes = await bot.sendDocument(CHAT_ID, _order.order)
+    let _teleRes = await bot.sendDocument(CHAT_ID, _order.order.pipe())
     //let _sendEmail = await qbo.sendInvoicePdf(_inv.Id, STORE_EMAIL)
     //let _pdf = await qbo.getInvoicePdf(_inv.Id);
     //let _teleRes = await bot.sendDocument(CHAT_ID, _pdf)
@@ -35,7 +35,7 @@ invoiceQ.process(async (job) => {
     let _logMessage = `Invoice ${_order.invoice.DocNumber} generated for ${_order.invoice.CustomerRef.name} on ${_order.invoice.TxnDate}; 
               Invoice PDF has been sent via email to ${_order.invoice.BillEmail.Address}.`
 
-    return _logMessage
+    return _logMessage;
 
   } catch(err) { console.log(err) };
 })
