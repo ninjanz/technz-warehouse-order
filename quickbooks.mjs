@@ -161,8 +161,8 @@ async function _createOrderPdf(_accepted, _rejected) {
     console.log(_rejected)
 
 
-    table1 = await createTable(_accepted, 'Accepted Items')
-    table2 = await createTable(_rejected, 'Rejected Items')
+    let table1 = await createTable(_accepted, 'Accepted Items')
+    let table2 = await createTable(_rejected, 'Rejected Items')
 
     if (table1.length > 0) { docDefinition.content.push(table1) };
     if (table2.length > 0) { docDefinition.content.push(table2) };
