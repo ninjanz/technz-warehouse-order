@@ -201,19 +201,20 @@ async function _createOrderPdf(_accepted, _rejected) {
 }
 
 async function createTable(someArray, tableHeader) {
+    let _x = [
+        {
+            text: tableHeader,
+            style: 'subheader'
+        },
+        {
+            table: {
+                body: [
+                    ['Items', 'Quantity']
+                ]
+            }
+        }]
     if (someArray.length > 0) {
-        let _x = [
-            {
-                text: tableHeader,
-                style: 'subheader'
-            },
-            {
-                table: {
-                    body: [
-                        ['Items', 'Quantity']
-                    ]
-                }
-            }]
+
         if (tableHeader == 'Accepted Items') {
             await someArray.forEach((group) => {
                 console.log(group)
