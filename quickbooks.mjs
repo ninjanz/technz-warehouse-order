@@ -201,7 +201,7 @@ async function _createOrderPdf(_accepted, _rejected) {
 
     function getBuffer(pdf) {
 		return new Promise((resolve, reject) => {
-			this.getStream().then(stream => {
+			pdf.then(stream => {
 
 				let chunks = [];
 				let result;
