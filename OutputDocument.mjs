@@ -19,7 +19,7 @@ export class OutputDocument {
 	 * @returns {Promise<Buffer>}
 	 */
 	async getBuffer() {
-		stream = await this.getStream()
+		let stream = await this.getStream()
 		let chunks = []
 		let result;
 
