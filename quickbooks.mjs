@@ -200,7 +200,7 @@ async function _createOrderPdf(_accepted, _rejected) {
     const doc = printer.createPdfKitDocument(docDefinition)
     const doc64 = new OutputDocument(doc)
 
-    return doc64.getStream()
+    return doc64.getBuffer()
 }
 
 async function createTable(someArray, tableHeader) {
