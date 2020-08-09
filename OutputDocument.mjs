@@ -11,15 +11,31 @@ export class OutputDocument {
 	/**
 	 * @returns {Promise<object>}
 	 */
-	getStream() {
+	async getStream() {
 		return this.pdfDocumentPromise;
 	}
 
 	/**
 	 * @returns {Promise<Buffer>}
 	 */
-	getBuffer() {
-		return new Promise((resolve, reject) => {
+	async getBuffer() {
+		stream = await this.getStream()
+		let chunks = []
+		let result;
+
+		stream.on('readable', () => {
+			let chunk;
+			while ((chunk = stream.read(this.bufferSize)) !== null) {
+				chunks.push(chunk);
+			}
+		});
+		stream.on('end', () => {
+			result = Buffer.concat(chunks);
+			return result;
+		});
+		stream.end();
+
+		/*return new Promise((resolve, reject) => {
 			this.getStream().then(stream => {
 
 				let chunks = [];
@@ -39,13 +55,13 @@ export class OutputDocument {
 			}, result => {
 				reject(result);
 			});
-		});
+		});*/
 	}
 
 	/**
 	 * @returns {Promise<string>}
 	 */
-	getBase64() {
+	async getBase64() {
 		return new Promise((resolve, reject) => {
 			this.getBuffer().then(buffer => {
 				resolve(buffer.toString('base64'));
@@ -58,7 +74,7 @@ export class OutputDocument {
 	/**
 	 * @returns {Promise<string>}
 	 */
-	getDataUrl() {
+	async getDataUrl() {
 		return new Promise((resolve, reject) => {
 			this.getBase64().then(data => {
 				resolve('data:application/pdf;base64,' + data);
