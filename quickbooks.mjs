@@ -198,7 +198,9 @@ async function _createOrderPdf(_accepted, _rejected) {
 
 
     const doc = printer.createPdfKitDocument(docDefinition)
+    console.log(doc)
     const doc64 = new OutputDocument(doc)
+    console.log(doc64)
     //let doc_buffer = await doc64.getBuffer()
 
     return doc64
