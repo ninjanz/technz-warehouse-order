@@ -8,7 +8,8 @@ import 'jspdf-autotable';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url)*/
 
-import { PdfPrinter, OutputDocument } from 'pdfmake';
+import pkg from 'pdfmake';
+const { PdfPrinter, OutputDocument } = pkg
 //import { table } from 'console';
 //import { path } from 'pdfkit/js/mixins/vector';
 
