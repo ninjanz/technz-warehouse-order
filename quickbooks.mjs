@@ -9,7 +9,7 @@ import { createRequire } from 'module';
 const require = createRequire(import.meta.url)*/
 
 import PdfPrinter from 'pdfmake';
-import OutputDocument from './OutputDocument.mjs'
+import { OutputDocument } from './OutputDocument.mjs'
 //import OutputDocument from 'pdfmake/src/OutputDocument';
 //import { table } from 'console';
 //import { path } from 'pdfkit/js/mixins/vector';
