@@ -70,4 +70,4 @@ class OutputDocument {
 
 }
 
-export default OutputDocument;
+export { OutputDocument };
