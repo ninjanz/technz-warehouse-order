@@ -223,7 +223,7 @@ async function _createOrderPdf(_accepted, _rejected) {
 		});
 	}
 
-    return doc.getBuffer()
+    return getBuffer(doc)
 }
 
 async function createTable(someArray, tableHeader) {
