@@ -129,7 +129,14 @@ async function _createOrderPdf(_accepted, _rejected) {
 
     //let arr = [], arr2 = [];
     //const doc = new jsPDF()
-    function fontPath(file) {
+    const fonts = {
+        Roboto: {
+            normal: 'fonts/Roboto-Regular.ttf',
+            bold: 'fonts/Roboto-Medium.ttf',
+            italic: 'fonts/Roboto-Italic.ttf'
+        }
+    }
+    /*function fontPath(file) {
         return path.resolve('pdfmake', 'test-env', 'tests', 'fonts', 'file')
     }
     const fonts = {
@@ -144,7 +151,7 @@ async function _createOrderPdf(_accepted, _rejected) {
             italics: 'Helvetica-Oblique',
             bolditalics: 'Helvetica-BoldOblique'
         }
-    }
+    }*/
     const printer = new PDF.PdfPrinter(fonts);
 
     //_rejected.forEach((group) => { arr.push([group.sku, group.quantity]) })
