@@ -227,9 +227,8 @@ async function createTable(someArray, tableHeader) {
             })
         }
     }
-}
 
-return _x
+    return _x
 }
 
 async function updateToken() {
