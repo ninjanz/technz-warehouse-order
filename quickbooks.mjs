@@ -226,9 +226,9 @@ async function createTable(someArray, tableHeader) {
                 _x1[1].table.body.push([group.sku, group.quantity])
             })
         }
-    }
 
-    return _x
+        return _x
+    }
 }
 
 async function updateToken() {
