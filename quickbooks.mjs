@@ -214,7 +214,6 @@ async function createTable(someArray, tableHeader) {
             }
         }]
     if (someArray.length > 0) {
-
         if (tableHeader == 'Accepted Items') {
             await someArray.forEach((group) => {
                 console.log(group)
@@ -224,7 +223,7 @@ async function createTable(someArray, tableHeader) {
         else {
             someArray.forEach((group) => {
                 console.log(group)
-                _x1[1].table.body.push([group.sku, group.quantity])
+                _x[1].table.body.push([group.sku, group.quantity])
             })
         }
 
