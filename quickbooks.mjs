@@ -8,8 +8,8 @@ import 'jspdf-autotable';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url)*/
 
-import PdfPrinter from 'pdfmake';
-import { table } from 'console';
+import { PdfPrinter, OutputDocument } from 'pdfmake';
+//import { table } from 'console';
 //import { path } from 'pdfkit/js/mixins/vector';
 
 const heroku = new Heroku({ token: process.env.HEROKU_API_TOKEN })
@@ -196,8 +196,9 @@ async function _createOrderPdf(_accepted, _rejected) {
 
 
     const doc = printer.createPdfKitDocument(docDefinition)
+    const doc64 = new OutputDocument(doc)
 
-    return doc
+    return doc64.getBuffer()
 }
 
 async function createTable(someArray, tableHeader) {
