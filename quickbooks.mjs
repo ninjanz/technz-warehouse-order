@@ -9,6 +9,7 @@ import { createRequire } from 'module';
 const require = createRequire(import.meta.url)*/
 
 import PdfPrinter from 'pdfmake';
+import { table } from 'console';
 //import { path } from 'pdfkit/js/mixins/vector';
 
 const heroku = new Heroku({ token: process.env.HEROKU_API_TOKEN })
@@ -160,29 +161,13 @@ async function _createOrderPdf(_accepted, _rejected) {
     console.log(_rejected)
 
 
-    if (_accepted.length > 0) {
-        let _x = [
-            {
-                text: 'Accepted Items',
-                style: 'subheader'
-            },
-            {
-                table: {
-                    body: [
-                        ['Items', 'Quantity']
-                    ]
-                }
-            }]
+    table1 = await createTable(_accepted, 'Accepted Items')
+    table2 = await createTable(_rejected, 'Rejected Items')
 
-        await _accepted.forEach((group) => {
-            console.log(group)
-            _x[1].table.body.push([group.SalesItemLineDetail.ItemRef.value, group.SalesItemLineDetail.Qty])
-        })
+    if (table1.length > 0) { docDefinition.content.push(table1) };
+    if (table2.length > 0) { docDefinition.content.push(table2) };
 
-        docDefinition.content.push(..._x)
-    }
-
-    if (_rejected.length > 0) {
+    /*if (_rejected.length > 0) {
         let _x = [
             {
                 text: 'Rejected Items',
@@ -213,6 +198,30 @@ async function _createOrderPdf(_accepted, _rejected) {
     const doc = printer.createPdfKitDocument(docDefinition)
 
     return doc
+}
+
+async function createTable(someArray, tableHeader) {
+    if (someArray.length > 0) {
+        let _x = [
+            {
+                text: tableHeader,
+                style: 'subheader'
+            },
+            {
+                table: {
+                    body: [
+                        ['Items', 'Quantity']
+                    ]
+                }
+            }]
+
+        await _accepted.forEach((group) => {
+            console.log(group)
+            _x[1].table.body.push([group.SalesItemLineDetail.ItemRef.value, group.SalesItemLineDetail.Qty])
+        })
+    }
+
+    return _x
 }
 
 async function updateToken() {
