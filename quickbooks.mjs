@@ -1,18 +1,6 @@
 import QuickBooks from 'node-quickbooks-promise';
 import Heroku from 'heroku-client';
-//import * as path from 'path';
-
-/*import jsPDF from 'jspdf/dist/jspdf.node.debug';
-import 'jspdf-autotable';
-
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url)*/
-
 import PdfPrinter from 'pdfmake';
-import { OutputDocument } from './OutputDocument.mjs'
-//import OutputDocument from 'pdfmake/src/OutputDocument';
-//import { table } from 'console';
-//import { path } from 'pdfkit/js/mixins/vector';
 
 const heroku = new Heroku({ token: process.env.HEROKU_API_TOKEN })
 const HEROKU_VARS_URL = process.env.HEROKU_VARS_URL
@@ -58,9 +46,6 @@ async function processOrder(payload,) {
 
         return { invoice: _sendEmail, order: _orderPdf };
     } catch (err) { console.log(err) };
-
-    // print no stock invoice here
-    //if (lineObj.rejArr.length > 0) console.log("rejected orders: \n", lineObj.rejArr);
 };
 
 async function _queryPayload(_payload) {
@@ -122,16 +107,7 @@ async function _createOrderPdf(_accepted, _rejected) {
             }
         }
     }
-    //write pdf
-    /*global.window = { document: { createElementNS: () => { return {} } } };
-    global.navigator = {};
-    global.btoa = () => { };*/
 
-    //const jsPDF = require('jspdf/dist/jspdf.node.min');
-
-
-    //let arr = [], arr2 = [];
-    //const doc = new jsPDF()
     const fonts = {
         Roboto: {
             normal: 'fonts/Roboto-Regular.ttf',
@@ -139,26 +115,9 @@ async function _createOrderPdf(_accepted, _rejected) {
             italic: 'fonts/Roboto-Italic.ttf'
         }
     }
-    /*function fontPath(file) {
-        return path.resolve('pdfmake', 'test-env', 'tests', 'fonts', 'file')
-    }
-    const fonts = {
-        Roboto: {
-            normal: fontPath('Roboto-Regular.ttf'),
-            bold: fontPath('Roboto-Medium.ttf'),
-            italics: fontPath('Roboto-Italic.ttf')
-        },
-        Helvetica: {
-            normal: 'Helvetica',
-            bold: 'Helvetica-Bold',
-            italics: 'Helvetica-Oblique',
-            bolditalics: 'Helvetica-BoldOblique'
-        }
-    }*/
+
     const printer = new PdfPrinter(fonts);
 
-    //_rejected.forEach((group) => { arr.push([group.sku, group.quantity]) })
-    //_accepted.forEach((group) => { arr2.push([group.ItemRef.value, group.Qty]) })
     console.log(_accepted)
     console.log(_rejected)
 
@@ -169,39 +128,8 @@ async function _createOrderPdf(_accepted, _rejected) {
     if (table1.length > 0) { docDefinition.content.push(table1) };
     if (table2.length > 0) { docDefinition.content.push(table2) };
 
-    /*if (_rejected.length > 0) {
-        let _x = [
-            {
-                text: 'Rejected Items',
-                style: 'subheader'
-            },
-            {
-                table: {
-                    body: [
-                        ['Items', 'Quantity']
-                    ]
-                }
-            }]
-
-        await _accepted.forEach((group) => {
-            console.log(group)
-            _x[1].table.body.push([group.sku, group.quantity])
-        })
-
-        docDefinition.content.push(..._x)
-    }
-
-
-    /*delete global.window;
-    delete global.navigator;
-    delete global.btoa;*/
-
 
     const doc = await printer.createPdfKitDocument(docDefinition)
-    //console.log(doc)
-    //const doc64 = new OutputDocument(doc)
-    //console.log(doc64)
-    //let doc_buffer = await doc64.getBuffer()
     doc.end()
 
     return doc
