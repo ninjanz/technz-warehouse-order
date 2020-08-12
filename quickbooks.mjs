@@ -1,6 +1,7 @@
 import QuickBooks from 'node-quickbooks-promise';
 import Heroku from 'heroku-client';
 import PdfPrinter from 'pdfmake';
+import moment from 'moment';
 
 const heroku = new Heroku({ token: process.env.HEROKU_API_TOKEN })
 const HEROKU_VARS_URL = process.env.HEROKU_VARS_URL
@@ -30,15 +31,24 @@ async function processOrder(payload,) {
     // create the invoice with all the required params
 
     try {
+        //let _date = new Date();
         let _queryRes = await _queryPayload(payload)
         let _filterRes = await _filterQuery(payload, _queryRes._stock)
+        let _lastInv = await qbo.findInvoices([
+            { field: 'DocNumber', value: 'P%', operator: 'LIKE', desc: 'DocNumber' },
+            { field: 'limit', value: 1 }
+        ])
+
+        let _newInvNum = parseInt(_lastInv["DocNumber"].split('-')[1]) + 1
 
         //let lineObj = await createLineObj(payload, queryObj[0])
         let _invParams = {
             "CustomerRef": {
                 "value": _queryRes._customerID,
             },
-            "Line": _filterRes._line
+            "Line": _filterRes._line,
+            "DueDate": moment().add(30, 'days').format("YYYY-MM-DD"),
+            "DocNum":  ''.concat('P', moment().format('YYYY'), '-', toString(_newInvNum)) //get running number from heroku/better to take from quickbooks itself
         }
         let _invRes = await qbo.createInvoice(_invParams)
         let _sendEmail = await qbo.sendInvoicePdf(_invRes.Id, STORE_EMAIL)
@@ -72,14 +82,21 @@ async function _filterQuery(_payload, _stock) {
                         "Amount": element["UnitPrice"] * subElement["quantity"],
                         "SalesItemLineDetail": {
                             "ItemRef": {
-                                "value": element.Id,
+                                "value": element["Id"],
                             },
-                            "Qty": subElement["quantity"]
+                            "Qty": subElement["quantity"],
+                            "UnitPrice": element["UnitPrice"]
                         }
                     }
 
                     _line.push(lineBase)
-                } else _rej.push(subElement)
+                } else { 
+                    // product name, qty ordered
+                    let product = {
+                        name: element["ItemRef"]["name"],
+                        qty: subElement["quantity"]
+                    }
+                    _rej.push(product) }
             }
         })
     })
@@ -98,10 +115,18 @@ async function _createOrderPdf(_accepted, _rejected) {
         ],
         styles: {
             header: {
-                fontSize: 18,
-                bold: true
+                font: 'Roboto',
+                bold: true,
+                decoration: 'underline'
             },
-            subheader: {
+            title: {
+                fontSize: 30,
+                alignment: 'center',
+            },
+            tableHeader: {
+                fontSize: 16,
+            },
+            subHeader: {
                 fontSize: 14,
                 bold: true
             }
@@ -143,6 +168,7 @@ async function createTable(someArray, tableHeader) {
         },
         {
             table: {
+                widths: ['50%', '50%'],
                 body: [
                     ['Items', 'Quantity']
                 ]
@@ -200,36 +226,43 @@ export { qbo, processOrder, updateToken };
 
 
 
-
-
-/*async function createLineObj(orderObj, stockItems) {
-    let lineArr = []
-    let rejArr = []
-
-    stockItems.forEach(element => {
-        orderObj.items.forEach(subElement => {
-            if (subElement.sku === element.Sku) {
-
-                // check if there is enough quantity
-                if (element["QtyOnHand"] >= subElement["quantity"]) {
-                    let lineBase = {
-                        "DetailType": "SalesItemLineDetail",
-                        "Amount": element["UnitPrice"] * subElement["quantity"],
-                        "SalesItemLineDetail": {
-                            "ItemRef": {
-                                "value": element.Id,
-                            },
-                            "Qty": subElement["quantity"]
-                        }
-                    }
-
-                    lineArr.push(lineBase)
-                } else rejArr.push(subElement)
+template = [
+    {
+        text: `NZ Curry House @ Plastic Supplies`,
+        style: [ 'header', 'title' ]
+    },
+    {
+        columns: [
+            {
+                text: `Order Form for ${customer_name}\n${customer_addresss}\n`,
+                width: '30%'
             }
-        })
-    })
-    return {
-        "lineArr": lineArr,
-        "rejArr": rejArr
+        ] 
+    },
+    {
+        columns: [
+            {
+                text: `Order #: ${order_number}`,
+                alignment: 'left'
+            },
+            {
+                text: `Order Date: ${order_date}\n\n`,
+                alignment: 'right'
+            }
+        ]
+    },
+    {
+        text: `Order List`
+    },
+    {
+        table: {
+            widths: [ '5%', '50%', '30%', '15%' ],
+            body: [
+                [ '', 'Product Name', 'Order Quantity', 'Accepted' ]
+            ]
+        }
+    },
+    {
+        text: `This is a computer generated document and does not require a signature`
     }
-}*/
+]
