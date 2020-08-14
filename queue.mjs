@@ -28,7 +28,7 @@ invoiceQ.process(async (job) => {
     let teleSec = await bot.sendDocument(CHAT_ID, orderpdf, {}, {filename: 'order.pdf'})
 
     const _logMessage = `Invoice ${_order.invoice.DocNumber} generated for ${_order.invoice.CustomerRef.name} on ${_order.invoice.TxnDate}; 
-              Invoice PDF has been sent via email to ${_order.invoice.BillEmail.Address} on ${}.`;
+              Invoice PDF has been sent via email to ${_order.invoice.BillEmail.Address}.`;
 
     return _logMessage;
   } catch (err) { console.log(err); }
