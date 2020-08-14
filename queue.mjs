@@ -26,7 +26,7 @@ invoiceQ.process(async (job) => {
     //let _teleRes = await bot.sendDocument(CHAT_ID, _pdf)
 
     let orderpdf = await createOrderPdf(_order.pdfparams)
-    let filename = _.concat(moment().format('YYMMDD').toString(), ' - ', _order.invoice.CustomerRef.name)
+    let filename = ''.concat(moment().format('YYMMDD').toString(), ' - ', _order.invoice.CustomerRef.name)
     await bot.sendDocument(PLASTIC_ORDER_SHOPS, orderpdf, {}, {filename: `${filename}.pdf`})
     await bot.sendDocument(PLASTIC_ORDER_HQ, orderpdf, {}, {filename: `${filename}.pdf`})
 
