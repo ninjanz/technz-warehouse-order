@@ -65,7 +65,7 @@ async function invoiceTemplate(params) {
             table: {
                 widths: ['5%', '50%', '30%', '15%'],
                 body: [
-                    ['', 'Product Name', 'Order Quantity', 'Accepted'],
+                    [ 'No', 'Product Name', 'Order Quantity', 'Accepted' ],
                 ],
             },
         },
@@ -75,6 +75,7 @@ async function invoiceTemplate(params) {
     let x = 1
     if (params.stock.length > 0) {
         await params.stock.forEach((val) => {
+            console.log(val)
             template[4].table.body.push([x++, val.SalesItemLineDetail.ItemRef.name, val.Qty, 'Y'])
         })
     }
