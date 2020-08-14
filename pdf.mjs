@@ -4,7 +4,7 @@ const docFonts = {
     Roboto: {
         normal: 'fonts/Roboto-Regular.ttf',
         bold: 'fonts/Roboto-Medium.ttf',
-        italic: 'fonts/Roboto-Italic.ttf',
+        italics: 'fonts/Roboto-Italic.ttf',
     },
 };
 
