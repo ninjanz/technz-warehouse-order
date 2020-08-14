@@ -106,7 +106,7 @@ async function _filterQuery(_payload, _stock) {
         } else {
           // product name, qty ordered
           const product = {
-            name: element.ItemRef.name,
+            name: element.Name,
             qty: subElement.quantity,
           };
           _rej.push(product);
