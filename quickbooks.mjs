@@ -7,6 +7,7 @@ import Heroku from 'heroku-client';
 import PdfPrinter from 'pdfmake';
 import moment from 'moment';
 
+
 const heroku = new Heroku({ token: process.env.HEROKU_API_TOKEN });
 const { HEROKU_VARS_URL } = process.env;
 
@@ -46,18 +47,26 @@ async function processOrder(payload) {
     // let lineObj = await createLineObj(payload, queryObj[0])
     const _invParams = {
       CustomerRef: {
-        value: _queryRes._customerID,
-        //name: _queryRes._,
+        value: _queryRes._customer.Id,
+        name: _queryRes._customer.DisplayName,
       },
       Line: _filterRes._line,
       DueDate: moment().add(30, 'days').format('YYYY-MM-DD'),
       DocNum: ''.concat('P', moment().format('YYYY'), '-', toString(_newInvNum)), // get running number from quickbooks
     };
+
     const _invRes = await qbo.createInvoice(_invParams);
     const _sendEmail = await qbo.sendInvoicePdf(_invRes.Id, STORE_EMAIL);
-    const _orderPdf = await _createOrderPdf(_filterRes._line, _filterRes._rej);
+    const _orderPdf = {
+      name: _queryRes._customerID.DisplayName,
+      address: ''.concat(_queryRes._customer.BillAddr.Line1, ', ', _queryRes._customer.BillAddr.City, ', ', _queryRes._customer.BillAddr.PostalCode, ', ', _queryRes._customer.BillAddr.CountrySubDivisionCode),
+      number: _invParams.DocNum,
+      date: moment().format('YYYY-MM-DD'),
+      stock: _filterRes._line,
+      nostock: _filterRes._rej
+  };
 
-    return { invoice: _sendEmail, order: _orderPdf };
+    return { invoice: _sendEmail, pdfparams: _orderPdf };
   } catch (err) { console.log(err); }
 }
 
@@ -67,9 +76,9 @@ async function _queryPayload(_payload) {
   _stock = _stock.QueryResponse.Item;
 
   let _customerID = await qbo.findCustomers({ DisplayName: _payload.customer });
-  _customerID = _customerID.QueryResponse.Customer[0].Id;
+  _customerID = _customerID.QueryResponse.Customer[0];
 
-  return { _customerID, _stock };
+  return { _customer, _stock };
 }
 
 async function _filterQuery(_payload, _stock) {
@@ -86,6 +95,7 @@ async function _filterQuery(_payload, _stock) {
             SalesItemLineDetail: {
               ItemRef: {
                 value: element.Id,
+                name: element.Name
               },
               Qty: subElement.quantity,
               UnitPrice: element.UnitPrice,
@@ -145,14 +155,15 @@ async function _createOrderPdf(_accepted, _rejected) {
 
 async function createPdfParams(params) {
   let returnParams = {
-    name: 'customer name',
+    name: params.name,
     address: 'customer address',
     number: 'order number',
     date: 'order date',
-    tableContents: []
+    stock: [],
+    nostock: []
   }
 
-  
+
 
   return returnParams
 }

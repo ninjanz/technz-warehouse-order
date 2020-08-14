@@ -70,9 +70,13 @@ async function invoiceTemplate(params) {
             },
         },
     }
+    let x = 1
+    await params.stock.forEach((val) => {
+        template.orderTable.table.body.push([ x++, val.SalesItemLineDetail.ItemRef.name, val.Qty, 'Y' ])
+    })
 
-    await params.tableContents.forEach((val, idx) => {
-        template.orderTable.table.body.push([ idx+1, val.name, val.qty, val.yes ? 'Y' : 'N/A' ])
+    await params.nostock.forEach((val) => {
+        template.orderTable.table.body.push([ x++, val.name, val.qty, 'N' ])
     })
 
     return template
@@ -98,3 +102,6 @@ async function createOrderPdf(params) {
 
     return doc
 }
+
+
+export {createOrderPdf}
