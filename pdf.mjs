@@ -35,16 +35,12 @@ async function invoiceTemplate(params) {
 
     const template = [
         {
-            text: 'NZ Curry House @ Plastic Supplies\n',
+            text: 'NZ Curry House @ Plastic Supplies\n\n\n\n',
             style: ['header', 'title'],
         },
         {
-            columns: [
-                {
-                    text: `Order for ${params.name}\n\n${params.address}\n`,
-                    width: '30%',
-                },
-            ],
+            text: `Order for ${params.name}\n\n${params.address}\n\n`,
+            style: ['header', 'subtitle']
         },
         {
             columns: [
@@ -63,9 +59,9 @@ async function invoiceTemplate(params) {
         },
         {
             table: {
-                widths: ['5%', '75%', '10%', '10%'],
+                widths: ['5%', '60%', '20%', '15%'],
                 body: [
-                    [ 'No', 'Product Name', 'Order Quantity', 'Accepted' ],
+                    ['No', 'Product Name', 'Order Quantity', 'Accepted'],
                 ],
             },
         },
