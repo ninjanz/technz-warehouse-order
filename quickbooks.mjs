@@ -44,11 +44,12 @@ async function processOrder(payload) {
 
     //console.log(_lastInv)
 
-    const _newInvNum = parseInt(_lastInv.DocNumber.split('-')[1], 10) + 1;
+    const _newInvNum = toString(parseInt(_lastInv.DocNumber.split('-')[1], 10) + 1);
     console.log(`new invoice number: ${_newInvNum}`)
-    console.log(moment().format('YYYY').toString())
-    let currYear = moment().format('YYYY').toString()
+    console.log(typeof(moment().format('YYYY').toString()))
 
+    let currYear = moment().format('YYYY').toString()
+    console.log(''.concat('P', currYear, '-', _newInvNum))
 
     // let lineObj = await createLineObj(payload, queryObj[0])
     const _invParams = {
@@ -58,7 +59,7 @@ async function processOrder(payload) {
       },
       Line: _filterRes._line,
       DueDate: moment().add(30, 'days').format('YYYY-MM-DD'),
-      DocNumber: ''.concat('P', currYear, '-', toString(_newInvNum)), // get running number from quickbooks
+      DocNumber: ''.concat('P', currYear, '-', _newInvNum), // get running number from quickbooks
     };
 
     const _invRes = await qbo.createInvoice(_invParams);
