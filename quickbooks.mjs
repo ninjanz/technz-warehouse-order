@@ -76,7 +76,7 @@ async function _queryPayload(_payload) {
   _stock = _stock.QueryResponse.Item;
 
   let _customer = await qbo.findCustomers({ DisplayName: _payload.customer });
-  _customer = _customerID.QueryResponse.Customer[0];
+  _customer = _customer.QueryResponse.Customer[0];
 
   return { _customer, _stock };
 }
