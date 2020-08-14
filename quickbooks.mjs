@@ -44,7 +44,7 @@ async function processOrder(payload) {
 
     //console.log(_lastInv)
 
-    const _newInvNum = toString(parseInt(_lastInv.DocNumber.split('-')[1], 10) + 1);
+    const _newInvNum = (parseInt(_lastInv.DocNumber.split('-')[1], 10) + 1).toString();
     console.log(`new invoice number: ${_newInvNum}`)
     console.log(typeof(moment().format('YYYY').toString()))
 
