@@ -27,8 +27,8 @@ invoiceQ.process(async (job) => {
 
     let orderpdf = await createOrderPdf(_order.pdfparams)
     let filename = ''.concat(moment().format('YYMMDD').toString(), ' - ', _order.invoice.CustomerRef.name)
-    await bot.sendDocument(PLASTIC_ORDER_SHOPS, orderpdf, {}, {filename: `${filename}.pdf`})
-    await bot.sendDocument(PLASTIC_ORDER_HQ, orderpdf, {}, {filename: `${filename}.pdf`})
+    bot.sendDocument(PLASTIC_ORDER_SHOPS, orderpdf, {}, {filename: `${filename}.pdf`})
+    bot.sendDocument(PLASTIC_ORDER_HQ, orderpdf, {}, {filename: `${filename}.pdf`})
 
     const _logMessage = `Invoice ${_order.invoice.DocNumber} generated for ${_order.invoice.CustomerRef.name} on ${_order.invoice.TxnDate}; 
               Invoice PDF has been sent via email to ${_order.invoice.BillEmail.Address}.`;
@@ -39,7 +39,7 @@ invoiceQ.process(async (job) => {
 
 invoiceQ.on('completed', (jobId, message) => {
   console.log(message);
-  bot.sendMessage(CHAT_ID, message);
+  bot.sendMessage(PLASTIC_ORDER_HQ, message);
 });
 
 export { invoiceQ };
