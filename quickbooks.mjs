@@ -42,6 +42,8 @@ async function processOrder(payload) {
       { field: 'limit', value: 1 },
     ]);
 
+    console.log(_lastInv)
+
     const _newInvNum = parseInt(_lastInv.DocNumber.split('-')[1], 10) + 1;
 
     // let lineObj = await createLineObj(payload, queryObj[0])
