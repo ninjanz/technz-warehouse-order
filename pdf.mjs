@@ -70,6 +70,7 @@ async function invoiceTemplate(params) {
             },
         },
     ]
+
     // ONLY IF THE LEN IS GREATER THAN 0
     let x = 1
     if (params.stock.length > 0) {
@@ -93,7 +94,7 @@ async function createOrderPdf(params) {
     const printer = new PdfPrinter(docFonts)
 
     const docDefinition = {
-        content: invoiceTemplate(params),
+        content: await invoiceTemplate(params),
         styles: docStyles,
         footer: {
             text: 'This is a computer generated document and does not require a signature',
