@@ -46,8 +46,8 @@ async function processOrder(payload) {
 
     const _newInvNum = parseInt(_lastInv.DocNumber.split('-')[1], 10) + 1;
     console.log(`new invoice number: ${_newInvNum}`)
-    console.log(moment().format('YYYY'))
-    let currYear = moment().format('YYYY')
+    console.log(moment().format('YYYY').toString())
+    let currYear = moment().format('YYYY').toString()
 
 
     // let lineObj = await createLineObj(payload, queryObj[0])
