@@ -75,8 +75,7 @@ async function invoiceTemplate(params) {
     let x = 1
     if (params.stock.length > 0) {
         await params.stock.forEach((val) => {
-            console.log(val)
-            template[4].table.body.push([x++, val.SalesItemLineDetail.ItemRef.name, val.Qty, 'Y'])
+            template[4].table.body.push([x++, val.SalesItemLineDetail.ItemRef.name, val.SalesItemLineDetail.Qty, 'Y'])
         })
     }
 
