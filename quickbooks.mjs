@@ -71,7 +71,7 @@ async function processOrder(payload) {
     console.log(`PDF PARAMS: ${_orderPdf}`)
 
     return { invoice: _sendEmail, pdfparams: _orderPdf };
-  } catch (err) { console.log(err); }
+  } catch (err) { console.log(err.Fault); }
 }
 
 async function _queryPayload(_payload) {
