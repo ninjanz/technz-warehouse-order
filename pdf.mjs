@@ -59,11 +59,11 @@ async function invoiceTemplate(params) {
             ],
         },
         {
-            text: 'Order List',
+            text: 'Order List\n',
         },
         {
             table: {
-                widths: ['5%', '50%', '30%', '15%'],
+                widths: ['5%', '75%', '10%', '10%'],
                 body: [
                     [ 'No', 'Product Name', 'Order Quantity', 'Accepted' ],
                 ],

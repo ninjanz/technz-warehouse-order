@@ -19,10 +19,10 @@ invoiceQ.process(async (job) => {
     await updateToken();
 
     const _order = await processOrder(job.data);
-    console.log(_order);
-    // let _sendEmail = await qbo.sendInvoicePdf(_inv.Id, STORE_EMAIL)
-    //let _pdf = await qbo.getInvoicePdf(_inv.Id);
-    //let _teleRes = await bot.sendDocument(CHAT_ID, _pdf)
+    //console.log(_order);
+    let _sendEmail = await qbo.sendInvoicePdf(_inv.Id, STORE_EMAIL)
+    let _pdf = await qbo.getInvoicePdf(_inv.Id);
+    let _teleRes = await bot.sendDocument(CHAT_ID, _pdf)
 
     let orderpdf = await createOrderPdf(_order.pdfparams)
     let teleSec = await bot.sendDocument(CHAT_ID, orderpdf, {}, {filename: 'order.pdf'})
