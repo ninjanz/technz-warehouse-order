@@ -39,8 +39,13 @@ async function invoiceTemplate(params) {
             style: ['header', 'title'],
         },
         {
-            text: `Order for ${params.name}\n\n${params.address}\n\n`,
-            style: ['header', 'subtitle']
+            columns: [
+                {
+                    text: `Order for ${params.name}\n\n${params.address}\n\n`,
+                    style: ['header', 'text'],
+                    width: '30%'
+                }
+            ]
         },
         {
             columns: [

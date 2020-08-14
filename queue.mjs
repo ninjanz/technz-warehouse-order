@@ -30,8 +30,8 @@ invoiceQ.process(async (job) => {
     bot.sendDocument(PLASTIC_ORDER_SHOPS, orderpdf, {}, {filename: `${filename}.pdf`})
     bot.sendDocument(PLASTIC_ORDER_HQ, orderpdf, {}, {filename: `${filename}.pdf`})
 
-    const _logMessage = `Invoice ${_order.invoice.DocNumber} generated for ${_order.invoice.CustomerRef.name} on ${_order.invoice.TxnDate}; 
-              Invoice PDF has been sent via email to ${_order.invoice.BillEmail.Address}.`;
+    const _logMessage = ''.concat(`Invoice ${_order.invoice.DocNumber} generated for ${_order.invoice.CustomerRef.name} on ${_order.invoice.TxnDate}`,
+    `Invoice PDF has been sent via email to ${_order.invoice.BillEmail.Address}.`)
 
     return _logMessage;
   } catch (err) { console.log(err); }
