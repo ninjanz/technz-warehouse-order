@@ -33,12 +33,12 @@ const docStyles = {
 
 async function invoiceTemplate(params) {
 
-    const template = {
-        pageHeader = {
+    const template = [
+        {
             text: 'NZ Curry House @ Plastic Supplies',
             style: ['header', 'title'],
         },
-        customerDetails = {
+        {
             columns: [
                 {
                     text: `Order Form for ${params.name}\n${params.address}\n`,
@@ -46,7 +46,7 @@ async function invoiceTemplate(params) {
                 },
             ],
         },
-        orderDetails = {
+        {
             columns: [
                 {
                     text: `Order #: ${params.number}`,
@@ -58,10 +58,10 @@ async function invoiceTemplate(params) {
                 },
             ],
         },
-        _ = {
+        {
             text: 'Order List',
         },
-        orderTable = {
+        {
             table: {
                 widths: ['5%', '50%', '30%', '15%'],
                 body: [
@@ -69,14 +69,14 @@ async function invoiceTemplate(params) {
                 ],
             },
         },
-    }
+    ]
     let x = 1
     await params.stock.forEach((val) => {
-        template.orderTable.table.body.push([ x++, val.SalesItemLineDetail.ItemRef.name, val.Qty, 'Y' ])
+        template[4].table.body.push([ x++, val.SalesItemLineDetail.ItemRef.name, val.Qty, 'Y' ])
     })
 
     await params.nostock.forEach((val) => {
-        template.orderTable.table.body.push([ x++, val.name, val.qty, 'N' ])
+        template[4].table.body.push([ x++, val.name, val.qty, 'N' ])
     })
 
     return template
