@@ -70,14 +70,19 @@ async function invoiceTemplate(params) {
             },
         },
     ]
+    // ONLY IF THE LEN IS GREATER THAN 0
     let x = 1
-    await params.stock.forEach((val) => {
-        template[4].table.body.push([ x++, val.SalesItemLineDetail.ItemRef.name, val.Qty, 'Y' ])
-    })
+    if (params.stock.length > 0) {
+        await params.stock.forEach((val) => {
+            template[4].table.body.push([x++, val.SalesItemLineDetail.ItemRef.name, val.Qty, 'Y'])
+        })
+    }
 
-    await params.nostock.forEach((val) => {
-        template[4].table.body.push([ x++, val.name, val.qty, 'N' ])
-    })
+    if (params.nostock.length > 0) {
+        await params.nostock.forEach((val) => {
+            template[4].table.body.push([x++, val.name, val.qty, 'N'])
+        })
+    }
 
     return template
 };
@@ -104,4 +109,4 @@ async function createOrderPdf(params) {
 }
 
 
-export {createOrderPdf}
+export { createOrderPdf }

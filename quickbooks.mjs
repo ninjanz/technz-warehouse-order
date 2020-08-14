@@ -42,7 +42,7 @@ async function processOrder(payload) {
       { field: 'limit', value: 1 },
     ])).QueryResponse.Invoice[0];
 
-    console.log(_lastInv)
+    //console.log(_lastInv)
 
     const _newInvNum = parseInt(_lastInv.DocNumber.split('-')[1], 10) + 1;
 
@@ -64,9 +64,11 @@ async function processOrder(payload) {
       address: ''.concat(_queryRes._customer.BillAddr.Line1, ', ', _queryRes._customer.BillAddr.City, ', ', _queryRes._customer.BillAddr.PostalCode, ', ', _queryRes._customer.BillAddr.CountrySubDivisionCode),
       number: _invParams.DocNum,
       date: moment().format('YYYY-MM-DD'),
-      stock: _filterRes._line,
-      nostock: _filterRes._rej
+      stock: _filterRes._line.length > 0 ? _filterRes._line : [],
+      nostock: _filterRes._rej.length > 0 ? _filterRes._rej : []
   };
+
+  console.log(`PDF PARAMS: ${_orderPdf}`)
 
     return { invoice: _sendEmail, pdfparams: _orderPdf };
   } catch (err) { console.log(err); }
