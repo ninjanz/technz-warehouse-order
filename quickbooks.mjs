@@ -54,7 +54,7 @@ async function processOrder(payload) {
       },
       Line: _filterRes._line,
       DueDate: moment().add(30, 'days').format('YYYY-MM-DD'),
-      DocNum: ''.concat('P', moment().format('YYYY'), '-', toString(_newInvNum)), // get running number from quickbooks
+      DocNumber: ''.concat('P', moment().format('YYYY'), '-', toString(_newInvNum)), // get running number from quickbooks
     };
 
     const _invRes = await qbo.createInvoice(_invParams);
@@ -62,7 +62,7 @@ async function processOrder(payload) {
     let _orderPdf = {
       name: _queryRes._customer.DisplayName,
       address: ''.concat(_queryRes._customer.BillAddr.Line1, ', ', _queryRes._customer.BillAddr.City, ', ', _queryRes._customer.BillAddr.PostalCode, ', ', _queryRes._customer.BillAddr.CountrySubDivisionCode),
-      number: _invParams.DocNum,
+      number: _invParams.DocNumber,
       date: moment().format('YYYY-MM-DD'),
       stock: _filterRes._line.length > 0 ? _filterRes._line : [],
       nostock: _filterRes._rej.length > 0 ? _filterRes._rej : []
