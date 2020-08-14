@@ -59,16 +59,16 @@ async function processOrder(payload) {
 
     const _invRes = await qbo.createInvoice(_invParams);
     const _sendEmail = await qbo.sendInvoicePdf(_invRes.Id, STORE_EMAIL);
-    const _orderPdf = {
+    let _orderPdf = {
       name: _queryRes._customer.DisplayName,
       address: ''.concat(_queryRes._customer.BillAddr.Line1, ', ', _queryRes._customer.BillAddr.City, ', ', _queryRes._customer.BillAddr.PostalCode, ', ', _queryRes._customer.BillAddr.CountrySubDivisionCode),
       number: _invParams.DocNum,
       date: moment().format('YYYY-MM-DD'),
       stock: _filterRes._line.length > 0 ? _filterRes._line : [],
       nostock: _filterRes._rej.length > 0 ? _filterRes._rej : []
-  };
+    };
 
-  console.log(`PDF PARAMS: ${_orderPdf}`)
+    console.log(`PDF PARAMS: ${_orderPdf}`)
 
     return { invoice: _sendEmail, pdfparams: _orderPdf };
   } catch (err) { console.log(err); }
