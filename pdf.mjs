@@ -90,7 +90,7 @@ async function createOrderPdf(params) {
     const docDefinition = {
         content: invoiceTemplate(params),
         styles: docStyles,
-        footer = {
+        footer: {
             text: 'This is a computer generated document and does not require a signature',
             style: 'footer'
         },
