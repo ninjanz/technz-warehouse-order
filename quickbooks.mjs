@@ -46,6 +46,7 @@ async function processOrder(payload) {
 
     const _newInvNum = parseInt(_lastInv.DocNumber.split('-')[1], 10) + 1;
     console.log(`new invoice number: ${_newInvNum}`)
+    console.log(''.concat('P', moment().format('YYYY'), '-', toString(_newInvNum)))
 
     // let lineObj = await createLineObj(payload, queryObj[0])
     const _invParams = {
