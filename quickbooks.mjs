@@ -37,11 +37,12 @@ async function processOrder(payload) {
   try {
     const _queryRes = await _queryPayload(payload);
     const _filterRes = await _filterQuery(payload, _queryRes._stock);
-    const _lastInv = (await qbo.findInvoices([
-      { field: 'DocNumber', value: 'P%', operator: 'LIKE', desc: 'DocNumber', },
+    const _lastInvRes = (await qbo.findInvoices([
+      { field: 'DocNumber', value: 'P%', operator: 'LIKE', desc: 'TxnDate', },
       { field: 'limit', value: 3 },
-    ])).QueryResponse.Invoice[0];
-
+    ])).QueryResponse.Invoice;
+    console.log(_lastInvRes)
+    const _lastInv = _lastInvRes[0]
     console.log(_lastInv)
 
     const _newInvNum = (parseInt(_lastInv.DocNumber.split('-')[1], 10) + 1).toString();
