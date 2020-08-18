@@ -37,16 +37,20 @@ async function processOrder(payload) {
   try {
     const _queryRes = await _queryPayload(payload);
     const _filterRes = await _filterQuery(payload, _queryRes._stock);
-    const _lastInv = (await qbo.findInvoices([
+    const _lastInvRes = (await qbo.findInvoices([
       { field: 'DocNumber', value: 'P%', operator: 'LIKE', desc: 'DocNumber', },
-      { field: 'limit', value: 1 },
-    ])).QueryResponse.Invoice[0];
+      { field: 'limit', value: 3 },
+    ])).QueryResponse.Invoice;
 
-    //console.log(_lastInv)
+    console.log(_lastInvRes)
+
+    const _lastInv = _lastInvRes[0]
+
+    console.log(_lastInv)
 
     const _newInvNum = (parseInt(_lastInv.DocNumber.split('-')[1], 10) + 1).toString();
     console.log(`new invoice number: ${_newInvNum}`)
-    console.log(typeof(moment().format('YYYY').toString()))
+    //console.log(typeof(moment().format('YYYY').toString()))
 
     let currYear = moment().format('YYYY').toString()
     console.log(''.concat('P', currYear, '-', _newInvNum))
@@ -86,6 +90,9 @@ async function _queryPayload(_payload) {
 
   let _customer = await qbo.findCustomers({ DisplayName: _payload.customer });
   _customer = _customer.QueryResponse.Customer[0];
+
+  console.log(_customer)
+  console.log(_stock)
 
   return { _customer, _stock };
 }
