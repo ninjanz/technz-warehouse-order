@@ -71,11 +71,13 @@ app.get('/job/:id', async (req, res) => {
 });
 
 app.get('/newInvNum', async (req, res) => {
+  try {
   await updateToken()
   let inv = await findInv()
 
   console.log(inv)
   return res.status(200).send()
+  } catch (err) { console.log(err) }
 })
 
 
