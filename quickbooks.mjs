@@ -21,8 +21,8 @@ const qbo = new QuickBooks(process.env.QUICKBOOKS_CLIENT,
 async function processOrder(payload) {
 
   try {
-    let { customer, stock } = await _queryPayload(payload);
-    let { line, reject } = await _filterQuery(payload, stock);
+    let { _customer: customer, _stock: stock } = await _queryPayload(payload);
+    let { _line: line, _rej: reject } = await _filterQuery(payload, stock);
     console.log(`line: ${line}`)
     console.log(`rejected: ${reject}`)
     let invNum = await _findLastInv();
@@ -63,7 +63,7 @@ async function _queryPayload(_payload) {
   console.log(`customer deets: ${_customer}`)
   console.log(`order deets: ${_stock}`)
 
-  return { customer: _customer, stock: _stock };
+  return { _customer, _stock };
 }
 
 async function _filterQuery(_payload, _stock) {
@@ -102,7 +102,7 @@ async function _filterQuery(_payload, _stock) {
 
   console.log(`filterQuery -- line: ${_line}`)
   console.log(`filterQuery -- rejected: ${_rej}`)
-  return { line: _line, reject: _rej };
+  return { _line, _rej };
 }
 
 async function _findLastInv() {
@@ -112,7 +112,9 @@ async function _findLastInv() {
     { field: 'limit', value: 5 },
   ])).QueryResponse.Invoice;
 
-  _lastInvRes.sort(function(a, b) {
+  console.log(_lastInvRes)
+
+  _lastInvRes = _lastInvRes.sort(function(a, b) {
     numA = parseInt(a.DocNumber.split('-')[1], 10)
     numB = parseInt(b.DocNumber.split('-')[1], 10)
 
