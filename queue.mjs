@@ -31,10 +31,10 @@ invoiceQ.process(async (job) => {
     bot.sendDocument(PLASTIC_ORDER_HQ, orderpdf, {}, {filename: `${filename}.pdf`})
 
     const _logMessage = ''.concat(`Invoice ${_order.invoice.DocNumber} generated for ${_order.invoice.CustomerRef.name} on ${_order.invoice.TxnDate}`,
-    `Invoice PDF has been sent via email to ${_order.invoice.BillEmail.Address}.`)
+    `. Invoice PDF has been sent via email to ${_order.invoice.BillEmail.Address}.`)
 
     return _logMessage;
-  } catch (err) { console.log(err); }
+  } catch (err) { console.log(err); bot.sendMessage(PLASTIC_ORDER_HQ, `Error: ${err}`); }
 });
 
 invoiceQ.on('completed', (jobId, message) => {

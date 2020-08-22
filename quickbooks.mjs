@@ -1,12 +1,7 @@
-/* eslint-disable linebreak-style */
-/* eslint-disable no-use-before-define */
-/* eslint-disable linebreak-style */
-/* eslint-disable no-underscore-dangle */
 import QuickBooks from 'node-quickbooks-promise';
 import Heroku from 'heroku-client';
-import PdfPrinter from 'pdfmake';
 import moment from 'moment';
-
+import { x } from 'pdfkit';
 
 const heroku = new Heroku({ token: process.env.HEROKU_API_TOKEN });
 const { HEROKU_VARS_URL } = process.env;
@@ -25,53 +20,31 @@ const qbo = new QuickBooks(process.env.QUICKBOOKS_CLIENT,
   process.env.QUICKBOOKS_REFRESH_TOKEN);
 
 async function processOrder(payload) {
-  // call funcs which create the invoice
-  // 1 search items and customer -- /
-  // 2 filter rejected and return both arrays THEN create line object --/
-  // 3 create invoice using params -- /
-  // 4 create order pdf using params -- /
-  // 5 send invoice via email (linked to 4) -- /
-  // 6 return invoice id and pdf -- /
-  // create the invoice with all the required params
 
   try {
-    const _queryRes = await _queryPayload(payload);
-    const _filterRes = await _filterQuery(payload, _queryRes._stock);
-    const _lastInvRes = (await qbo.findInvoices([
-      { field: 'DocNumber', value: 'P%', operator: 'LIKE', desc: 'TxnDate', },
-      { field: 'limit', value: 1 },
-    ])).QueryResponse.Invoice;
-    console.log(_lastInvRes)
-    const _lastInv = _lastInvRes[0]
-    console.log(_lastInv)
+    let { customer, stock } = await _queryPayload(payload);
+    let { line, reject } = await _filterQuery(payload, stock);
+    let invNum = await _findLastInv();
 
-    const _newInvNum = ((parseInt(_lastInv.DocNumber.split('-')[1], 10) + 1).toString()).padStart(5, '0');
-    console.log(`new invoice number: ${_newInvNum}`)
-    //console.log(typeof(moment().format('YYYY').toString()))
-
-    let currYear = moment().format('YYYY').toString()
-    console.log(''.concat('P', currYear, '-', _newInvNum))
-
-    // let lineObj = await createLineObj(payload, queryObj[0])
     const _invParams = {
       CustomerRef: {
-        value: _queryRes._customer.Id,
-        name: _queryRes._customer.DisplayName,
+        value: customer.Id,
+        name: customer.DisplayName,
       },
       Line: _filterRes._line,
       DueDate: moment().add(30, 'days').format('YYYY-MM-DD'),
-      DocNumber: ''.concat('P', currYear, '-', _newInvNum), // get running number from quickbooks
+      DocNumber: ''.concat('P', currYear, '-', invNum), // get running number from quickbooks
     };
 
-    const _invRes = await qbo.createInvoice(_invParams);
-    const _sendEmail = await qbo.sendInvoicePdf(_invRes.Id, STORE_EMAIL);
+    let _invRes = await qbo.createInvoice(_invParams);
+    let _sendEmail = await qbo.sendInvoicePdf(_invRes.Id, STORE_EMAIL);
     let _orderPdf = {
-      name: _queryRes._customer.DisplayName,
-      address: ''.concat(_queryRes._customer.BillAddr.Line1, ', ', _queryRes._customer.BillAddr.City, ', ', _queryRes._customer.BillAddr.PostalCode, ', ', _queryRes._customer.BillAddr.CountrySubDivisionCode),
+      name: customer.DisplayName,
+      address: ''.concat(customer.BillAddr.Line1, ',', customer.BillAddr.City, ', ', customer.BillAddr.PostalCode, ', ', customer.BillAddr.CountrySubDivisionCode),
       number: _invParams.DocNumber,
       date: moment().format('YYYY-MM-DD'),
-      stock: _filterRes._line.length > 0 ? _filterRes._line : [],
-      nostock: _filterRes._rej.length > 0 ? _filterRes._rej : []
+      stock: _filterRes._line.length > 0 ? line : [],
+      nostock: _filterRes._rej.length > 0 ? reject : []
     };
 
     console.log(`PDF PARAMS: ${_orderPdf}`)
@@ -81,15 +54,12 @@ async function processOrder(payload) {
 }
 
 async function _queryPayload(_payload) {
-  const _skus = _payload.items.map((item) => item.sku);
-  let _stock = await qbo.findItems({ Sku: _skus });
-  _stock = _stock.QueryResponse.Item;
+  let _skus = _payload.items.map((item) => item.sku);
+  let _stock = (await qbo.findItems({ Sku: _skus })).QueryResponse.Item;
+  let _customer = (await qbo.findCustomers({ DisplayName: _payload.customer })).QueryResponse.Customer[0];
 
-  let _customer = await qbo.findCustomers({ DisplayName: _payload.customer });
-  _customer = _customer.QueryResponse.Customer[0];
-
-  console.log(_customer)
-  console.log(_stock)
+  console.log(`customer deets: ${_customer}`)
+  console.log(`order deets: ${_stock}`)
 
   return { _customer, _stock };
 }
@@ -131,85 +101,28 @@ async function _filterQuery(_payload, _stock) {
   return { _line, _rej };
 }
 
-async function _createOrderPdf(_accepted, _rejected) {
-  const docDefinition = {
-    content: [
-      {
-        text: 'Order Form',
-        style: 'header',
-      },
-    ],
-  };
+async function _findLastInv() {
+  
+  let _lastInvRes = (await qbo.findInvoices([
+    { field: 'DocNumber', value: 'P%', operator: 'LIKE', desc: 'TxnDate', },
+    { field: 'limit', value: 5 },
+  ])).QueryResponse.Invoice;
 
-  const fonts = {
-    Roboto: {
-      normal: 'fonts/Roboto-Regular.ttf',
-      bold: 'fonts/Roboto-Medium.ttf',
-      italic: 'fonts/Roboto-Italic.ttf',
-    },
-  };
+  _lastInvRes.sort(function(a, b) {
+    numA = parseInt(a.DocNumber.split('-')[1], 10)
+    numB = parseInt(b.DocNumber.split('-')[1], 10)
 
-  const printer = new PdfPrinter(fonts);
+    if (numA > numB) return 1;
+    if (numB > numA) return -1;
+  }).reverse()[0]
 
-  console.log(_accepted);
-  console.log(_rejected);
+  let invNum = ((parseInt(_lastInv.DocNumber.split('-')[1], 10) + 1).toString()).padStart(5, '0');
+  console.log(`new invoice number: ${invNum}`)
 
-  const table1 = await createTable(_accepted, 'Accepted Items');
-  const table2 = await createTable(_rejected, 'Rejected Items');
+  let currYear = moment().format('YYYY').toString()
+  console.log(''.concat('P', currYear, '-', invNum))
 
-  if (table1.length > 0) { docDefinition.content.push(table1); }
-  if (table2.length > 0) { docDefinition.content.push(table2); }
-
-  const doc = await printer.createPdfKitDocument(docDefinition);
-  doc.end();
-
-  return doc;
-}
-
-async function createPdfParams(params) {
-  let returnParams = {
-    name: params.name,
-    address: 'customer address',
-    number: 'order number',
-    date: 'order date',
-    stock: [],
-    nostock: []
-  }
-
-
-
-  return returnParams
-}
-
-async function createTable(someArray, tableHeader) {
-  const _x = [
-    {
-      text: tableHeader,
-      style: 'subheader',
-    },
-    {
-      table: {
-        widths: ['50%', '50%'],
-        body: [
-          ['Items', 'Quantity'],
-        ],
-      },
-    }];
-  if (someArray.length > 0) {
-    if (tableHeader === 'Accepted Items') {
-      await someArray.forEach((group) => {
-        console.log(group);
-        _x[1].table.body.push([group.SalesItemLineDetail.ItemRef.value, group.SalesItemLineDetail.Qty]);
-      });
-    } else {
-      someArray.forEach((group) => {
-        console.log(group);
-        _x[1].table.body.push([group.sku, group.quantity]);
-      });
-    }
-
-    return _x;
-  }
+  return invNum
 }
 
 async function updateToken() {
