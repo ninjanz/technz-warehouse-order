@@ -23,14 +23,17 @@ async function processOrder(payload) {
   try {
     let { customer, stock } = await _queryPayload(payload);
     let { line, reject } = await _filterQuery(payload, stock);
+    console.log(`line: ${line}`)
+    console.log(`rejected: ${reject}`)
     let invNum = await _findLastInv();
+    console.log(`invNum: ${invNum}`)
 
     const _invParams = {
       CustomerRef: {
         value: customer.Id,
         name: customer.DisplayName,
       },
-      Line: _filterRes._line,
+      Line: line,
       DueDate: moment().add(30, 'days').format('YYYY-MM-DD'),
       DocNumber: ''.concat('P', currYear, '-', invNum), // get running number from quickbooks
     };
@@ -42,8 +45,8 @@ async function processOrder(payload) {
       address: ''.concat(customer.BillAddr.Line1, ',', customer.BillAddr.City, ', ', customer.BillAddr.PostalCode, ', ', customer.BillAddr.CountrySubDivisionCode),
       number: _invParams.DocNumber,
       date: moment().format('YYYY-MM-DD'),
-      stock: _filterRes._line.length > 0 ? line : [],
-      nostock: _filterRes._rej.length > 0 ? reject : []
+      stock: line.length > 0 ? line : [],
+      nostock: reject.length > 0 ? reject : []
     };
 
     console.log(`PDF PARAMS: ${_orderPdf}`)
