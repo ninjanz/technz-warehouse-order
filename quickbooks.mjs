@@ -112,9 +112,9 @@ async function _findLastInv() {
     { field: 'limit', value: 5 },
   ])).QueryResponse.Invoice;
 
-  console.log(_lastInvRes)
+  //console.log(_lastInvRes)
 
-  _lastInvRes = _lastInvRes.sort(function(a, b) {
+  _lastInvRes = await _lastInvRes.sort(function(a, b) {
     numA = parseInt(a.DocNumber.split('-')[1], 10)
     numB = parseInt(b.DocNumber.split('-')[1], 10)
 
@@ -127,6 +127,7 @@ async function _findLastInv() {
 
   //let currYear = moment().format('YYYY').toString()
   invNum = ''.concat('P', moment().format('YYYY').toString(), '-', invNum)
+  console.log(`invoice string: ${invNum}`)
 
   return invNum
 }
