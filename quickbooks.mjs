@@ -1,7 +1,6 @@
 import QuickBooks from 'node-quickbooks-promise';
 import Heroku from 'heroku-client';
 import moment from 'moment';
-import { x } from 'pdfkit';
 
 const heroku = new Heroku({ token: process.env.HEROKU_API_TOKEN });
 const { HEROKU_VARS_URL } = process.env;
