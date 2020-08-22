@@ -51,7 +51,7 @@ async function processOrder(payload) {
 
     console.log(`PDF PARAMS: ${pdfparams}`)
 
-    return { invoice, _orderPdf: pdfparams };
+    return { invoice, pdfparams };
   } catch (err) { console.log(err.Fault); }
 }
 
