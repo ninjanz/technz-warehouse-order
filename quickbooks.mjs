@@ -115,8 +115,8 @@ async function _findLastInv() {
   //console.log(_lastInvRes)
 
   _lastInvRes = _lastInvRes.sort(function(a, b) {
-    numA = parseInt(a.DocNumber.split('-')[1], 10)
-    numB = parseInt(b.DocNumber.split('-')[1], 10)
+    let numA = parseInt(a.DocNumber.split('-')[1], 10)
+    let numB = parseInt(b.DocNumber.split('-')[1], 10)
 
     if (numA > numB) return 1;
     if (numB > numA) return -1;
