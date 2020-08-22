@@ -114,13 +114,15 @@ async function _findLastInv() {
 
   //console.log(_lastInvRes)
 
-  _lastInvRes = await _lastInvRes.sort(function(a, b) {
+  _lastInvRes = _lastInvRes.sort(function(a, b) {
     numA = parseInt(a.DocNumber.split('-')[1], 10)
     numB = parseInt(b.DocNumber.split('-')[1], 10)
 
     if (numA > numB) return 1;
     if (numB > numA) return -1;
   }).reverse()[0]
+
+  console.log(_lastInvRes.DocNumber)
 
   let invNum = ((parseInt(_lastInv.DocNumber.split('-')[1], 10) + 1).toString()).padStart(5, '0');
   console.log(`new invoice number: ${invNum}`)
