@@ -3,6 +3,7 @@ import bodyParser from 'body-parser';
 
 //import { qbo, createInvoice, updateToken } from "./quickbooks.mjs";
 import { invoiceQ } from "./queue.mjs";
+import { _findLastInv as findInv } from ".quickbooks.mjs";
 
 // setup express with body-parser
 const app = express()
@@ -68,6 +69,13 @@ app.get('/job/:id', async (req, res) => {
     res.json({ id, state, reason });
   }
 });
+
+app.get('/newInvNum', async (req, res) => {
+  let inv = await findInv()
+
+  console.log(inv)
+  return res.status(200).send()
+})
 
 
 

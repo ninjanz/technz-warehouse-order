@@ -38,9 +38,9 @@ async function processOrder(payload) {
       DocNumber: invNum, // get running number from quickbooks
     };
 
-    let _invRes = await qbo.createInvoice(_invParams);
-    _invRes = await qbo.sendInvoicePdf(_invRes.Id, STORE_EMAIL);
-    let _orderPdf = {
+    let invoice = await qbo.createInvoice(_invParams);
+    invoice = await qbo.sendInvoicePdf(invoice.Id, STORE_EMAIL);
+    let pdfparams = {
       name: customer.DisplayName,
       address: ''.concat(customer.BillAddr.Line1, ',', customer.BillAddr.City, ', ', customer.BillAddr.PostalCode, ', ', customer.BillAddr.CountrySubDivisionCode),
       number: _invParams.DocNumber,
@@ -49,9 +49,9 @@ async function processOrder(payload) {
       nostock: reject.length > 0 ? reject : []
     };
 
-    console.log(`PDF PARAMS: ${_orderPdf}`)
+    console.log(`PDF PARAMS: ${pdfparams}`)
 
-    return { _invRes, _orderPdf };
+    return { invoice, _orderPdf: pdfparams };
   } catch (err) { console.log(err.Fault); }
 }
 
@@ -160,4 +160,4 @@ async function updateToken() {
   } else console.log('token update not required');
 }
 
-export { qbo, processOrder, updateToken };
+export { qbo, processOrder, updateToken, _findLastInv };
