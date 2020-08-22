@@ -19,7 +19,7 @@ invoiceQ.process(async (job) => {
     console.log(`Create Invoice - Job #${job.id} Received!`);
     await updateToken();
 
-    const { invoice, pdfparams } = await processOrder(job.data);
+    let { _invRes: invoice, _orderPdf: pdfparams } = await processOrder(job.data);
     //console.log(_order);
     //let _sendEmail = await qbo.sendInvoicePdf(_inv.Id, STORE_EMAIL)
     //let _pdf = await qbo.getInvoicePdf(_inv.Id);

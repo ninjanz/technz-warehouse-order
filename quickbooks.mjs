@@ -39,7 +39,7 @@ async function processOrder(payload) {
     };
 
     let _invRes = await qbo.createInvoice(_invParams);
-    let _sendEmail = await qbo.sendInvoicePdf(_invRes.Id, STORE_EMAIL);
+    _invRes = await qbo.sendInvoicePdf(_invRes.Id, STORE_EMAIL);
     let _orderPdf = {
       name: customer.DisplayName,
       address: ''.concat(customer.BillAddr.Line1, ',', customer.BillAddr.City, ', ', customer.BillAddr.PostalCode, ', ', customer.BillAddr.CountrySubDivisionCode),
@@ -51,7 +51,7 @@ async function processOrder(payload) {
 
     console.log(`PDF PARAMS: ${_orderPdf}`)
 
-    return { invoice: _sendEmail, pdfparams: _orderPdf };
+    return { _invRes, _orderPdf };
   } catch (err) { console.log(err.Fault); }
 }
 
@@ -125,6 +125,7 @@ async function _findLastInv() {
   let invNum = ((parseInt(_lastInv.DocNumber.split('-')[1], 10) + 1).toString()).padStart(5, '0');
   console.log(`new invoice number: ${invNum}`)
 
+  //let currYear = moment().format('YYYY').toString()
   invNum = ''.concat('P', moment().format('YYYY').toString(), '-', invNum)
 
   return invNum
