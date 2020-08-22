@@ -63,7 +63,7 @@ async function _queryPayload(_payload) {
   console.log(`customer deets: ${_customer}`)
   console.log(`order deets: ${_stock}`)
 
-  return { _customer, _stock };
+  return { customer: _customer, stock: _stock };
 }
 
 async function _filterQuery(_payload, _stock) {
@@ -100,7 +100,9 @@ async function _filterQuery(_payload, _stock) {
     });
   });
 
-  return { _line, _rej };
+  console.log(`filterQuery -- line: ${_line}`)
+  console.log(`filterQuery -- rejected: ${_rej}`)
+  return { line: _line, reject: _rej };
 }
 
 async function _findLastInv() {
