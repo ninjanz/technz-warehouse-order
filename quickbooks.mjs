@@ -124,7 +124,7 @@ async function _findLastInv() {
 
   console.log(_lastInvRes.DocNumber)
 
-  let invNum = ((parseInt(_lastInv.DocNumber.split('-')[1], 10) + 1).toString()).padStart(5, '0');
+  let invNum = ((parseInt(_lastInvRes.DocNumber.split('-')[1], 10) + 1).toString()).padStart(5, '0');
   console.log(`new invoice number: ${invNum}`)
 
   //let currYear = moment().format('YYYY').toString()
