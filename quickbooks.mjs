@@ -108,13 +108,13 @@ async function _filterQuery(_payload, _stock) {
 async function _findLastInv() {
   
   let _lastInvRes = (await qbo.findInvoices([
-    { field: 'DocNumber', value: 'P%', operator: 'LIKE', desc: 'TxnDate', },
+    { field: 'DocNumber', value: 'P%', operator: 'LIKE', desc: 'DocNumber', },
     { field: 'limit', value: 5 },
-  ])).QueryResponse.Invoice;
+  ])).QueryResponse.Invoice[0];
 
-  //console.log(_lastInvRes)
+  console.log(_lastInvRes)
 
-  _lastInvRes = _lastInvRes.sort(function(a, b) {
+  /*_lastInvRes = _lastInvRes.sort(function(a, b) {
     let numA = parseInt(a.DocNumber.split('-')[1], 10)
     let numB = parseInt(b.DocNumber.split('-')[1], 10)
 
@@ -122,7 +122,7 @@ async function _findLastInv() {
     if (numB > numA) return -1;
   }).reverse()[0]
 
-  console.log(_lastInvRes.DocNumber)
+  console.log(_lastInvRes.DocNumber)*/
 
   let invNum = ((parseInt(_lastInvRes.DocNumber.split('-')[1], 10) + 1).toString()).padStart(5, '0');
   console.log(`new invoice number: ${invNum}`)
