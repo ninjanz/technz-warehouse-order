@@ -136,6 +136,7 @@ async function _findLastInv() {
     _query = await qbo.findInvoices([
       { field: 'DocNumber', value: fullInvNum, operator: '='}
     ]).QueryResponse
+    console.log(_query)
   }
   while(_query.Invoice[0] !== undefined);
   
