@@ -137,11 +137,11 @@ async function _findLastInv() {
     { field: 'DocNumber', value: fullInvNum, operator: '='}
   ]).QueryResponse.Invoice[0] != undefined);
   
-  
+
   //let currYear = moment().format('YYYY').toString()
   //invNum = ''.concat('P', moment().format('YYYY').toString(), '-', invNum)
   //invNum = ''.concat('P', moment().format('YYYY').toString(), '-', invNum.toString().padStart(5, '0'))
-  //console.log(`invoice string: ${invNum}`)
+  console.log(`invoice string: ${fullInvNum}`)
 
   return fullInvNum
 }
