@@ -112,7 +112,7 @@ async function _findLastInv() {
     { field: 'limit', value: 5 },
   ])).QueryResponse.Invoice[0];
 
-  console.log(_lastInvRes)
+  //console.log(_lastInvRes)
   //let invNum = ((parseInt(_lastInvRes.DocNumber.split('-')[1], 10) + 1).toString()).padStart(5, '0');
   let invNum = parseInt(_lastInvRes.DocNumber.split('-')[1], 10)
 
@@ -131,9 +131,9 @@ async function _findLastInv() {
   do{
     invNum += 1
     fullInvNum = ''.concat('P', moment().format('YYYY').toString(), '-', invNum.toString().padStart(5, '0'))
-    console.log(`new invoice number: ${fullInvNum}`)
+    console.log(`do-while--new invoice number: ${fullInvNum}`)
   }
-  while(qbo.findInvoices([
+  while(await qbo.findInvoices([
     { field: 'DocNumber', value: fullInvNum, operator: '='}
   ]).QueryResponse.Invoice[0] != undefined);
   
