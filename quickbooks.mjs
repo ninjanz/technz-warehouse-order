@@ -137,7 +137,7 @@ async function _findLastInv() {
     ])
     console.log(_query)
   }
-  while(_query.QueryResponse.Invoice[0] !== undefined);
+  while( Object.entries(_query.QueryResponse).length !== 0 );
   
 
   //let currYear = moment().format('YYYY').toString()
