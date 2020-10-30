@@ -113,6 +113,8 @@ async function _findLastInv() {
   ])).QueryResponse.Invoice[0];
 
   console.log(_lastInvRes)
+  //let invNum = ((parseInt(_lastInvRes.DocNumber.split('-')[1], 10) + 1).toString()).padStart(5, '0');
+  let invNum = parseInt(_lastInvRes.DocNumber.split('-')[1], 10)
 
   /*_lastInvRes = _lastInvRes.sort(function(a, b) {
     let numA = parseInt(a.DocNumber.split('-')[1], 10)
@@ -124,14 +126,24 @@ async function _findLastInv() {
 
   console.log(_lastInvRes.DocNumber)*/
 
-  let invNum = ((parseInt(_lastInvRes.DocNumber.split('-')[1], 10) + 1).toString()).padStart(5, '0');
-  console.log(`new invoice number: ${invNum}`)
-
+  let fullInvNum = ''
+  
+  do{
+    invNum += 1
+    fullInvNum = ''.concat('P', moment().format('YYYY').toString(), '-', invNum.toString().padStart(5, '0'))
+    console.log(`new invoice number: ${fullInvNum}`)
+  }
+  while(qbo.findInvoices([
+    { field: 'DocNumber', value: fullInvNum, operator: '='}
+  ]).QueryResponse.Invoice[0] != undefined);
+  
+  
   //let currYear = moment().format('YYYY').toString()
-  invNum = ''.concat('P', moment().format('YYYY').toString(), '-', invNum)
-  console.log(`invoice string: ${invNum}`)
+  //invNum = ''.concat('P', moment().format('YYYY').toString(), '-', invNum)
+  //invNum = ''.concat('P', moment().format('YYYY').toString(), '-', invNum.toString().padStart(5, '0'))
+  //console.log(`invoice string: ${invNum}`)
 
-  return invNum
+  return fullInvNum
 }
 
 async function updateToken() {

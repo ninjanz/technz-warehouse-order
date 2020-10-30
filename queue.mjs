@@ -27,7 +27,7 @@ invoiceQ.process(async (job) => {
 
     let orderpdf = await createOrderPdf(pdfparams)
     let filename = ''.concat(moment().format('YYMMDD').toString(), ' - ', invoice.CustomerRef.name)
-    //bot.sendDocument(PLASTIC_ORDER_SHOPS, orderpdf, {}, {filename: `${filename}.pdf`})
+    bot.sendDocument(PLASTIC_ORDER_SHOPS, orderpdf, {}, {filename: `${filename}.pdf`})
     bot.sendDocument(PLASTIC_ORDER_HQ, orderpdf, {}, {filename: `${filename}.pdf`})
 
     const _logMessage = ''.concat(`Invoice ${invoice.DocNumber} generated for ${invoice.CustomerRef.name} on ${invoice.TxnDate}`,
