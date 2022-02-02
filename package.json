@@ -2,21 +2,25 @@
   "name": "quickbooks-test",
   "version": "1.0.0",
   "description": "",
-  "main": "app.js",
+  "main": "app.mjs",
   "dependencies": {
     "body-parser": "^1.19.0",
-    "dotenv": "^8.2.0",
+    "bull": "^3.15.0",
     "express": "^4.17.1",
     "heroku-client": "^3.1.0",
     "intuit-oauth": "^3.0.1",
-    "node-quickbooks": "^2.0.34"
+    "moment": "^2.27.0",
+    "node-quickbooks-promise": "^1.0.5",
+    "node-telegram-bot-api": "^0.50.0",
+    "pdfkit": "^0.11.0",
+    "pdfmake": "^0.1.68"
   },
   "devDependencies": {
     "nodemon": "^2.0.4"
   },
   "scripts": {
-    "start": "node app.js",
-    "dev": "nodemon app.js",
+    "start": "node app.mjs",
+    "dev": "nodemon app.mjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
