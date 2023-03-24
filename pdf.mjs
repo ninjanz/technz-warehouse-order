@@ -1,6 +1,6 @@
 import PdfPrinter from 'pdfmake';
 
-const docFonts = {
+const FONTS = {
     Roboto: {
         normal: 'fonts/Roboto-Regular.ttf',
         bold: 'fonts/Roboto-Medium.ttf',
@@ -8,107 +8,131 @@ const docFonts = {
     },
 };
 
-const docStyles = {
-    header: {
-        font: 'Roboto',
-        bold: true,
-        decoration: 'underline',
-    },
-    title: {
-        fontSize: 20,
-        alignment: 'center',
-    },
-    subtitle: {
-        fontSize: 16,
-    },
-    text: {
-        fontSize: 12,
-    },
-    footer: {
-        fontSize: 10,
-        italics: true,
-        alignment: 'center'
-    }
-}
+const TABLE_WIDTHS = [
+    '5%', '60%', '20%', '15%'
+];
 
-async function invoiceTemplate(params) {
+const TABLE_HEADER = [
+    { text: 'No', style: 'tableHeader' },
+    { text: 'Product Name', style: 'tableHeader' },
+    { text: 'Order Quantity', style: 'tableHeader' },
+    { text: 'Accepted', style: 'tableHeader' },
+];
 
-    const template = [
-        {
-            text: 'NZ Curry House @ Plastic Supplies\n\n\n\n',
-            style: ['header', 'title'],
-        },
-        {
-            columns: [
-                {
-                    text: `Order for ${params.name}\n\n${params.address}\n\n`,
-                    style: ['header', 'text'],
-                    width: '30%'
-                }
-            ]
-        },
-        {
-            columns: [
-                {
-                    text: `Order #: ${params.number}`,
-                    alignment: 'left',
-                },
-                {
-                    text: `Order Date: ${params.date}\n\n`,
-                    alignment: 'right',
-                },
-            ],
-        },
-        {
-            text: 'Order List\n\n',
-        },
-        {
-            table: {
-                widths: ['5%', '60%', '20%', '15%'],
-                body: [
-                    ['No', 'Product Name', 'Order Quantity', 'Accepted'],
-                ],
-            },
-        },
-    ]
-
-    // ONLY IF THE LEN IS GREATER THAN 0
-    let x = 1
-    if (params.stock.length > 0) {
-        await params.stock.forEach((val) => {
-            template[4].table.body.push([x++, val.SalesItemLineDetail.ItemRef.name, val.SalesItemLineDetail.Qty, 'Y'])
-        })
-    }
-
-    if (params.nostock.length > 0) {
-        await params.nostock.forEach((val) => {
-            template[4].table.body.push([x++, val.name, val.qty, 'N'])
-        })
-    }
-
-    return template
+const TABLE_FOOTER = {
+    text: 'This is not an invoice. This is a computer generated document and does not require a signature',
+    style: ['footer', 'alignCenter'],
 };
 
-/*
-@params: params: object {name:String, address:String, number:String, date:String, tableContents:Array[{name: String, qty: Number, Yes: Boolean }]}*/
-async function createOrderPdf(params) {
-    const printer = new PdfPrinter(docFonts)
+async function createOrderTableBody(acceptedItems, rejectedItems) {
+    const fillCell = (idx, isAccepted) =>
+        idx % 2 === 0 ? (isAccepted ? '#EAFAF1' : '#F9EBEA') : isAccepted ? '#D5F5E3' : '#F2D7D5';
+
+    const rows = [
+        ...acceptedItems.map((item, idx) => [
+            { text: idx + 1, alignment: 'center', fillColor: fillCell(idx, true) },
+            { text: item.SalesItemLineDetail.ItemRef.name, fillColor: fillCell(idx, true) },
+            { text: item.SalesItemLineDetail.Qty, alignment: 'center', fillColor: fillCell(idx, true) },
+            { text: 'Y', alignment: 'center', fillColor: fillCell(idx, true) },
+        ]),
+        ...rejectedItems.map((item, idx) => [
+            { text: idx + 1, alignment: 'center', fillColor: fillCell(idx, false) },
+            { text: item.name, fillColor: fillCell(idx, false) },
+            { text: item.qty, alignment: 'center', fillColor: fillCell(idx, false) },
+            { text: 'N', alignment: 'center', fillColor: fillCell(idx, false) },
+        ]),
+    ];
+
+    return [...TABLE_HEADER, ...rows];
+}
+
+async function createOrderPdf(orderDetails) {
+    const { name, address, number, date, stock, nostock } = orderDetails;
+    const printer = new PdfPrinter(FONTS)
 
     const docDefinition = {
-        content: await invoiceTemplate(params),
-        styles: docStyles,
-        footer: {
-            text: 'This is a computer generated document and does not require a signature',
-            style: 'footer'
+        content: [
+            {
+                text: 'NZ Curry House @ Warehouse\n\n',
+                bold: true,
+                fontSize: 20,
+                alignment: 'center'
+            },
+            {
+                columns: [
+                    {
+                        text: `${name}\n`,
+                        fontSize: 16,
+                        bold: true,
+                        width: '50%'
+                    }]
+            },
+            {
+                columns: [
+                    {
+                        text: `${address}\n`,
+                        fontSize: 16,
+                        width: '50%'
+                    }]
+            },
+            {
+                columns: [
+                    {
+                        text: `Order #: ${number}`,
+                        alignment: 'left',
+                        fontSize: 16
+                    },
+                    {
+                        text: `Order List`,
+                        alignment: 'center',
+                        bold: true,
+                        fontSize: 16
+                    },
+                    {
+                        text: `Order Date: ${date}`,
+                        alignment: 'right',
+                        fontSize: 16
+                    },]
+            },
+            {
+                table: {
+                    widths: TABLE_WIDTHS,
+                    headerRows: 1,
+                    body: createOrderTableBody(stock, nostock),
+                    layout: {
+                        hLineWidth: function (i, node) {
+                            if (i === 0 || i === node.table.body.length) return 0
+                            else if (i === 1) return 2
+                            else return 1
+                        },
+                        vLineWidth: 0,
+
+                    }
+                },
+            },],
+        styles: {
+            defaultStyle: {
+                font: 'Roboto',
+                fontSize: 12
+            },
+            footer: {
+                fontSize: 10,
+                italics: true,
+            },
+            tableHeader: {
+                bold: true,
+                rowSpan: 2,
+                alignment: 'center',
+            },
         },
+        footer: TABLE_FOOTER,
 
     }
 
-    const doc = printer.createPdfKitDocument(docDefinition)
+    const doc = await printer.createPdfKitDocument(docDefinition)
     doc.end();
 
     return doc
 }
 
-
-export { createOrderPdf }
+export { createOrderPdf };

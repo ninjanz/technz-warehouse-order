@@ -16,6 +16,7 @@
     "pdfmake": "^0.1.68"
   },
   "devDependencies": {
+    "@types/bull": "^4.10.0",
     "nodemon": "^2.0.4"
   },
   "scripts": {
