@@ -11,16 +11,17 @@ app.use(bodyParser.json());
 
 const PORT = process.env.PORT || 3000
 
-/*// deploy test
+// deploy test
 app.get('/', (req, res) => {
   res.send("hellow world!")
 })
 
-// qbo token test
+/*// qbo token test
 app.get('/company', (req, res) => {
   qbo.findCompanyInfos().then(data => { res.send(data); })
   .catch((err) => { console.log(err) });
 })*/
+
 /*
 // create invoice using this route
 app.post('/create-invoice-dep', async (req, res) => {

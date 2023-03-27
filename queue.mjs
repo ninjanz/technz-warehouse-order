@@ -43,7 +43,7 @@ invoiceQueue.on('completed', (jobId, message) => {
 invoiceQueue.on('drained', () => {
   const heroku = new Heroku({ token: process.env.HEROKU_API_TOKEN });
 
-  await heroku.patch(process.env.HEROKU_VARS_URL, {
+  heroku.patch(process.env.HEROKU_VARS_URL, {
     body: {
       QUICKBOOKS_ACCESS_TOKEN: process.env.QUICKBOOKS_ACCESS_TOKEN,
       QUICKBOOKS_REFRESH_TOKEN: process.env.QUICKBOOKS_REFRESH_TOKEN,
