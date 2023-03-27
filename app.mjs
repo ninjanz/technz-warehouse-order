@@ -2,7 +2,7 @@ import express from 'express';
 import bodyParser from 'body-parser';
 
 //import { qbo, createInvoice, updateToken } from "./quickbooks.mjs";
-import { invoiceQ } from "./queue.mjs";
+import { invoiceQueue } from "./queue.mjs";
 //import { _findLastInv as findInv, updateToken } from "./quickbooks.mjs";
 
 // setup express with body-parser
@@ -41,7 +41,7 @@ app.post('/create-invoice-dep', async (req, res) => {
 })*/
 
 app.post('/create-invoice', async(req, res) => {
-  let job = invoiceQ.add(req.body)
+  let job = invoiceQueue.add(req.body)
 
   return res.status(200).send(`Request Received! Job ID: ${job.id}`);
 })
