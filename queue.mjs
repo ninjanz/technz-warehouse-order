@@ -15,7 +15,7 @@ invoiceQueue.process(async (job) => {
 
     // check if the access token is valid; refresh the access token if necessary
     if (checkAccessToken()) { await refreshAccessToken() }
-    
+
     let { invoice, invoicePdf, pdfparams } = await processOrder(job.data);
     //console.log(_order);
     //let _sendEmail = await qbo.sendInvoicePdf(_inv.Id, STORE_EMAIL)
@@ -23,7 +23,7 @@ invoiceQueue.process(async (job) => {
     //let _teleRes = await bot.sendDocument(CHAT_ID, _pdf)
 
     let orderPdf = await createOrderPdf(pdfparams)
-    
+
     let filename = ''.concat(moment().format('YYMMDD').toString(), ' - ', invoice.CustomerRef.name)
     bot.sendDocument(PLASTIC_ORDER_SHOPS, orderPdf, {}, { filename: `${filename}.pdf` })
     bot.sendDocument(PLASTIC_ORDER_HQ, orderPdf, {}, { filename: `${filename}.pdf` })
@@ -52,19 +52,5 @@ invoiceQueue.on('drained', () => {
   }).then(() => { console.log('sucessfully updated access_token on heroku...') });
 });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-export { invoiceQ };
+export { invoiceQueue };
 
