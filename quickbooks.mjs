@@ -108,7 +108,7 @@ async function _filterQuery(_payload, _stock) {
 async function _findLastInv() {
   
   let _lastInvRes = (await qbo.findInvoices([
-    { field: 'DocNumber', value: 'P2021%', operator: 'LIKE', desc: 'DocNumber', },
+    { field: 'DocNumber', value: 'P23%', operator: 'LIKE', desc: 'DocNumber', },
     { field: 'limit', value: 5 },
   ])).QueryResponse.Invoice[0];
 
@@ -130,7 +130,7 @@ async function _findLastInv() {
   
   do{
     invNum += 1
-    fullInvNum = ''.concat('P', moment().format('YYYY').toString(), '-', invNum.toString().padStart(5, '0'))
+    fullInvNum = ''.concat('P', moment().format('YYYY').toString(), '-', invNum.toString().padStart(3, '0'))
     console.log(`do-while--new invoice number: ${fullInvNum}`)
     _query = await qbo.findInvoices([
       { field: 'DocNumber', value: fullInvNum }
