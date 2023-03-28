@@ -29,8 +29,8 @@ bot.onText(/\/fetch/, (msg, match) => {
     }
 }) */
 
-const CHICKEN_ORDER = '-400162180'
-const PLASTIC_ORDER_HQ = '-371528263'
-const PLASTIC_ORDER_SHOPS = '-487982914'
+//const CHICKEN_ORDER = '-400162180'
+//const PLASTIC_ORDER_HQ = '-371528263'
+//const PLASTIC_ORDER_SHOPS = '-487982914'
 
 export { bot, CHICKEN_ORDER, PLASTIC_ORDER_HQ, PLASTIC_ORDER_SHOPS }
