@@ -59,7 +59,7 @@ app.post('/create-invoice', async(req, res) => {
 // Allows the client to query the state of a background job
 app.get('/job/:id', async (req, res) => {
   let id = req.params.id;
-  let job = await downloadQ.getJob(id);
+  let job = await invoiceQ.getJob(id);
 
   if (job === null) {
     res.status(404).end();
