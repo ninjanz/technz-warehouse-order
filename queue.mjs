@@ -14,7 +14,9 @@ invoiceQueue.process(async (job) => {
 
 
     // check if the access token is valid; refresh the access token if necessary
-    if (checkAccessToken()) { await refreshAccessToken() }
+    if (checkAccessToken()) { 
+      await refreshAccessToken(); 
+    }
 
     let { invoice, invoicePdf, pdfparams } = await processOrder(job.data);
     //console.log(_order);

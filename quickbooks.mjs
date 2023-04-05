@@ -19,7 +19,7 @@ async function processOrder(payload) {
     const { customer } = await quickBooks.findCustomers({ DisplayName: payload.customer }).QueryResponse.Customer[0];
     const items = payload.items.map(item => item.sku);
     const stock = await quickBooks.findItems({ Sku: items }).QueryResponse.Item;
-    const { line, rejected } = await filterQuery(payload, stock);
+    const { line: lineItems, rejected: rejectedItems } = await filterQuery(payload, stock);
     const invNum = await findNextInvoiceNumber();
 
     const invParams = {
@@ -27,25 +27,25 @@ async function processOrder(payload) {
         value: customer.Id,
         name: customer.DisplayName,
       },
-      Line: line,
+      Line: lineItems,
       DueDate: moment().format('YYYY-MM-DD'),
       DocNumber: invNum,
     };
 
-    let invoice = await quickbooks.createInvoice(invParams);
+    let invoice = await quickBooks.createInvoice(invParams);
     // the email status parameter will be set to EmailSent
-    invoice = await quickbooks.sendInvoicePdf(invoice.Id, STORE_EMAIL);
-    invoicePdf = await quickbooks.getInvoicePdf(invoice.Id)
+    invoice = await quickBooks.sendInvoicePdf(invoice.Id, STORE_EMAIL);
+    invoicePdf = await quickBooks.getInvoicePdf(invoice.Id)
 
     const pdfparams = {
       name: customer.DisplayName,
       address: `${customer.BillAddr.Line1}, ${customer.BillAddr.City}, ${customer.BillAddr.PostalCode}, ${customer.BillAddr.CountrySubDivisionCode}`,
       number: invParams.DocNumber,
       date: moment().format('YYYY-MM-DD'),
-      stock: line.length > 0 ? line : [],
-      nostock: rejected.length > 0 ? rejected : []
+      stock: lineItems.length > 0 ? lineItems : [],
+      nostock: rejectedItems.length > 0 ? rejectedItems : []
     };
-  } catch (err) { throw error(err); }
+  } catch (err) { throw err; }
 
   console.log(`PDF PARAMS: ${pdfparams}`);
 
@@ -120,7 +120,7 @@ async function findLastInvoiceNumber() {
 
     return lastInvoiceNumber;
 
-  } catch (error) { console.error(error); throw error; }
+  } catch (err) { console.error(err); throw err; }
 }
 
 function checkAccessToken() {
