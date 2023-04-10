@@ -7,7 +7,7 @@ const { HEROKU_VARS_URL } = process.env;
 
 const STORE_EMAIL = 'plastic@nzcurryhouse.com';
 
-const qbo = new QuickBooks(process.env.QUICKBOOKS_CLIENT,
+let qbo = new QuickBooks(process.env.QUICKBOOKS_CLIENT,
   process.env.QUICKBOOKS_SECRET,
   process.env.QUICKBOOKS_ACCESS_TOKEN,
   false, // no token secret for oAuth 2.0
@@ -160,8 +160,8 @@ async function updateToken() {
       const refresh_response = await qbo.refreshAccessToken();
 
       const dateNow = new Date();
-      // console.log("Access Token Refreshed at: ", dateNow.toString(), " / ", dateNow.getTime())
-      // console.log("Refresh Response: ", refresh_response)
+      console.log("Access Token Refreshed at: ", dateNow.toString(), " / ", dateNow.getTime())
+      console.log("Refresh Response: ", refresh_response)
 
       await heroku.patch(HEROKU_VARS_URL, {
         body: {
