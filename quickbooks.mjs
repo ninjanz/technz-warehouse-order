@@ -130,7 +130,7 @@ async function _findLastInv() {
   
   do{
     invNum += 1
-    fullInvNum = ''.concat('P', moment().format('YYYY').toString(), '-', invNum.toString().padStart(3, '0'))
+    fullInvNum = ''.concat('P', moment().format('YY').toString(), '-', invNum.toString().padStart(3, '0'))
     console.log(`do-while--new invoice number: ${fullInvNum}`)
     _query = await qbo.findInvoices([
       { field: 'DocNumber', value: fullInvNum }
