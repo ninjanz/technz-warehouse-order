@@ -21,7 +21,7 @@ let qbo = new QuickBooks(process.env.QUICKBOOKS_CLIENT,
 async function processOrder(payload) {
 
   try {
-    let { _customer: customer, _stock: stock } = await _queryPayload(payload);
+    let { _customer: customer, _stock: stock, _date: date } = await _queryPayload(payload);
     let { _line: line, _rej: reject } = await _filterQuery(payload, stock);
     console.log(`line: ${line}`)
     console.log(`rejected: ${reject}`)
@@ -34,7 +34,7 @@ async function processOrder(payload) {
         name: customer.DisplayName,
       },
       Line: line,
-      DueDate: moment().add(30, 'days').format('YYYY-MM-DD'),
+      //DueDate: moment().add(30, 'days').format('YYYY-MM-DD'),
       DocNumber: invNum, // get running number from quickbooks
     };
 
@@ -44,7 +44,7 @@ async function processOrder(payload) {
       name: customer.DisplayName,
       address: ''.concat(customer.BillAddr.Line1, ',', customer.BillAddr.City, ', ', customer.BillAddr.PostalCode, ', ', customer.BillAddr.CountrySubDivisionCode),
       number: _invParams.DocNumber,
-      date: moment().format('YYYY-MM-DD'),
+      date: moment(_date, 'M/D/YYYY H:mm:ss').format('YYYY-MM-DD'),
       stock: line.length > 0 ? line : [],
       nostock: reject.length > 0 ? reject : []
     };
