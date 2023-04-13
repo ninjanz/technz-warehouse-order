@@ -156,7 +156,7 @@ async function checkAccessToken() {
 
   console.log(`timeNow: ${timeNow}, lastRefresh: ${lastRefresh.toISOString()}, timeDiff: ${timeDiff}`);
 
-  if (timeDiff >= 55) { refreshAccessToken(); refreshBool = true};
+  if (timeDiff >= 55) { await refreshAccessToken(); refreshBool = true};
 
   return refreshBool;
 }
