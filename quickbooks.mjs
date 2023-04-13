@@ -15,7 +15,7 @@ const quickBooks = new QuickBooks(
   process.env.QUICKBOOKS_REFRESH_TOKEN);
 
 async function processOrder(payload) {
-  tokenTest = await quickBooks.findCompanyInfos()
+  let tokenTest = await quickBooks.findCompanyInfos()
   console.log(tokenTest);
 
   let orderDetails = {
