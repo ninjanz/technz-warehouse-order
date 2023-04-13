@@ -6,6 +6,11 @@ const FONTS = {
         bold: 'fonts/FiraSans-Medium.ttf',
         italics: 'fonts/FiraSans-Italic.ttf',
     },
+    Roboto: {
+        normal: 'fonts/Roboto-Regular.ttf',
+        bold: 'fonts/Roboto-Medium.ttf',
+        italics: 'fonts/Roboto-Italic.ttf',
+    },
 };
 
 const TABLE_WIDTHS = [
@@ -108,7 +113,7 @@ async function createOrderPdf(orderDetails) {
             },],
         styles: {
             defaultStyle: {
-                font: 'FiraSans',
+                font: 'Helvetica',
                 fontSize: 12
             },
             footer: {
