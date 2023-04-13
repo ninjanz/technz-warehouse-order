@@ -2,8 +2,6 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import { invoiceQueue } from "./queue.mjs";
 
-process.env["NTBA_FIX_319"] = 1
-
 // setup express with body-parser
 const app = express()
 app.use(bodyParser.json());

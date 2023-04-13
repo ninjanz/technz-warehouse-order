@@ -13,30 +13,33 @@ const PLASTIC_ORDER_SHOPS = '-487982914'
 invoiceQueue.process(async (job, done) => {
   try {
     console.log(`Create Invoice - Job #${job.id} Received!`);
-    let filename = `${moment(job.data.date).format('YYMMDD')}-${invoice.job.data.customer}`
+    let filename = `${moment(job.data.date).format('YYMMDD')}-${job.data.customer}`
 
     // check if the access token is valid; refresh the access token if necessary
-    if (checkAccessToken()) { await refreshAccessToken(); }
+    let tokenNeedsRefresh = checkAccessToken()
+    if (tokenNeedsRefresh) { await refreshAccessToken(); }
 
     // create the invoice and order pdf object
     let { invoicePdf, orderDetails, invNum } = await processOrder(job.data);
     let orderPdf = await createOrderPdf(orderDetails)
 
     done(null, { filename, invNum, orderPdf, invoicePdf });
-    
-  } catch (error) { 
-    done(error); 
+
+  } catch (error) {
+    done(error);
 
   } finally {
-    const heroku = new Heroku({ token: process.env.HEROKU_API_TOKEN });
+    if (tokenNeedsRefresh) {
+      const heroku = new Heroku({ token: process.env.HEROKU_API_TOKEN });
 
-    heroku.patch(process.env.HEROKU_VARS_URL, {
-      body: {
-        QUICKBOOKS_ACCESS_TOKEN: process.env.QUICKBOOKS_ACCESS_TOKEN,
-        QUICKBOOKS_REFRESH_TOKEN: process.env.QUICKBOOKS_REFRESH_TOKEN,
-        QUICKBOOKS_LAST_REFRESH: process.env.QUICKBOOKS_LAST_REFRESH,
-      },
-    }).then(() => { console.log('Sucessfully updated access_token on heroku...') });
+      heroku.patch(process.env.HEROKU_VARS_URL, {
+        body: {
+          QUICKBOOKS_ACCESS_TOKEN: process.env.QUICKBOOKS_ACCESS_TOKEN,
+          QUICKBOOKS_REFRESH_TOKEN: process.env.QUICKBOOKS_REFRESH_TOKEN,
+          QUICKBOOKS_LAST_REFRESH: process.env.QUICKBOOKS_LAST_REFRESH,
+        },
+      }).then(() => { console.log('Sucessfully updated access_token on heroku...') });
+    }
   }
 });
 
@@ -49,7 +52,7 @@ invoiceQueue.on('completed', (job, result) => {
 });
 
 invoiceQueue.on('failed', (job, error) => {
-  console.log(`${job.id} - ${error.message}`);
+  console.log(`Job ${job.id} error - ${error.message}`);
   teleBot.sendMessage(PLASTIC_ORDER_SHOPS, `${job.id} - ${error.message}`);
 });
 
