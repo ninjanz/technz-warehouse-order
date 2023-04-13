@@ -18,6 +18,7 @@ async function processOrder(payload) {
   //let tokenTest = await quickBooks.findCompanyInfos()
   //console.log(tokenTest);
   let invoicePdf = null;
+  let invNum = null;
   let orderDetails = {
     name: '',
     address: '',
@@ -36,7 +37,7 @@ async function processOrder(payload) {
 
     // check which of the ordered items are available in stock
     const { lineItems, pdfList } = await filterQuery(payload, stock);
-    const invNum = await findNextInvoiceNumber();
+    invNum = await findNextInvoiceNumber();
 
     // create the invoice on quickbooks
     let invoiceObj = await quickBooks.createInvoice({
