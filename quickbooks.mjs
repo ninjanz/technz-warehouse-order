@@ -109,6 +109,9 @@ async function filterQuery(payload, stock) {
     }
   }
 
+  console.log(pdfList);
+  console.log(lineItems);
+
   return { lineItems, pdfList };
 }
 
