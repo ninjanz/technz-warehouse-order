@@ -15,7 +15,6 @@ invoiceQueue.process(async (job, done) => {
 
   try {
     console.log(`Create Invoice - Job #${job.id} Received!`);
-    
     let filename = `${moment(job.data.date).format('YYMMDD')}-${job.data.customer}`
     
     // create the invoice and order pdf object
@@ -24,7 +23,9 @@ invoiceQueue.process(async (job, done) => {
 
     done(null, { tokenNeedsRefresh, filename, invNum, orderPdf, invoicePdf });
 
-  } catch (error) { error.tokenNeedsRefresh = tokenNeedsRefresh; done(error); } 
+  } catch (error) { 
+    error.tokenNeedsRefresh = tokenNeedsRefresh;
+    done(error); } 
 });
 
 invoiceQueue.on('completed', (job, result) => {
