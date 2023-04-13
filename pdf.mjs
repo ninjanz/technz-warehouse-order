@@ -80,7 +80,7 @@ async function createOrderPdf(orderDetails) {
                 columns: [
                     {
                         text: `Order #: ${number}`,
-                        alignment: 'left',
+                        //alignment: 'left',
                         fontSize: 16
                     },
                     {
@@ -131,8 +131,8 @@ async function createOrderPdf(orderDetails) {
 
     }
 
-    console.log(`doc definition: ${docDefinition}`);
-    const doc = await printer.createPdfKitDocument(docDefinition)
+    console.log(`doc definition: ${JSON.stringify(docDefinition)}`);
+    const doc = await printer.createPdfKitDocument(docDefinition);
     doc.end();
 
     return doc
