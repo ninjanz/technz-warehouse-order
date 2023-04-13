@@ -28,7 +28,7 @@ async function processOrder(payload) {
 
   try {
     // search the customer details
-    let { customer } = (await quickBooks.findCustomers({ DisplayName: payload.customer })).QueryResponse.Customer[0];
+    let customer = (await quickBooks.findCustomers({ DisplayName: payload.customer })).QueryResponse.Customer[0];
     console.log(customer);
     // create a list of items that need to be searched on qb and then find their details
     const items = payload.items.map(item => item.sku);
