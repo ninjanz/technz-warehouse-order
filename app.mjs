@@ -22,6 +22,7 @@ app.get('/company', (req, res) => {
 
 app.post('/create-invoice', async(req, res) => {
   let job = invoiceQueue.add(req.body)
+  console.log(job);
   res.status(200).send(`Request Received! Job ID: ${job.id}`);
 })
 

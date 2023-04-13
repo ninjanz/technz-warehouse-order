@@ -54,7 +54,7 @@ invoiceQueue.on('failed', (job, error) => {
   console.log(`Job ${job.id} error - ${error.message}`);
   teleBot.sendMessage(PLASTIC_ORDER_SHOPS, `${job.id} - ${error.message}`);
 
-  if (result.tokenNeedsRefresh) {
+  if (error.tokenNeedsRefresh) {
     const heroku = new Heroku({ token: process.env.HEROKU_API_TOKEN });
 
     heroku.patch(process.env.HEROKU_VARS_URL, {
