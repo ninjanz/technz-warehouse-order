@@ -23,24 +23,11 @@ invoiceQueue.process(async (job, done) => {
     let { invoicePdf, orderDetails, invNum } = await processOrder(job.data);
     let orderPdf = await createOrderPdf(orderDetails)
 
-    done(null, { filename, invNum, orderPdf, invoicePdf });
+    done(null, { tokenNeedsRefresh, filename, invNum, orderPdf, invoicePdf });
 
   } catch (error) {
-    done(error);
-
-  } finally {
-    if (tokenNeedsRefresh) {
-      const heroku = new Heroku({ token: process.env.HEROKU_API_TOKEN });
-
-      heroku.patch(process.env.HEROKU_VARS_URL, {
-        body: {
-          QUICKBOOKS_ACCESS_TOKEN: process.env.QUICKBOOKS_ACCESS_TOKEN,
-          QUICKBOOKS_REFRESH_TOKEN: process.env.QUICKBOOKS_REFRESH_TOKEN,
-          QUICKBOOKS_LAST_REFRESH: process.env.QUICKBOOKS_LAST_REFRESH,
-        },
-      }).then(() => { console.log('Sucessfully updated access_token on heroku...') });
-    }
-  }
+    error.tokenNeedsRefresh = tokenNeedsRefresh;
+    done(error); } 
 });
 
 invoiceQueue.on('completed', (job, result) => {
@@ -49,11 +36,35 @@ invoiceQueue.on('completed', (job, result) => {
   // send the invoice and order pdf object to telegram
   teleBot.sendDocument(PLASTIC_ORDER_SHOPS, result.orderPdf, {}, { filename: `${result.filename}.pdf` })
   teleBot.sendDocument(PLASTIC_ORDER_SHOPS, result.invoicePdf, {}, { filename: `${result.invNum}.pdf` })
+
+  if (result.tokenNeedsRefresh) {
+    const heroku = new Heroku({ token: process.env.HEROKU_API_TOKEN });
+
+    heroku.patch(process.env.HEROKU_VARS_URL, {
+      body: {
+        QUICKBOOKS_ACCESS_TOKEN: process.env.QUICKBOOKS_ACCESS_TOKEN,
+        QUICKBOOKS_REFRESH_TOKEN: process.env.QUICKBOOKS_REFRESH_TOKEN,
+        QUICKBOOKS_LAST_REFRESH: process.env.QUICKBOOKS_LAST_REFRESH,
+      },
+    }).then(() => { console.log('Sucessfully updated access_token on heroku...') });
+  }
 });
 
 invoiceQueue.on('failed', (job, error) => {
   console.log(`Job ${job.id} error - ${error.message}`);
   teleBot.sendMessage(PLASTIC_ORDER_SHOPS, `${job.id} - ${error.message}`);
+
+  if (result.tokenNeedsRefresh) {
+    const heroku = new Heroku({ token: process.env.HEROKU_API_TOKEN });
+
+    heroku.patch(process.env.HEROKU_VARS_URL, {
+      body: {
+        QUICKBOOKS_ACCESS_TOKEN: process.env.QUICKBOOKS_ACCESS_TOKEN,
+        QUICKBOOKS_REFRESH_TOKEN: process.env.QUICKBOOKS_REFRESH_TOKEN,
+        QUICKBOOKS_LAST_REFRESH: process.env.QUICKBOOKS_LAST_REFRESH,
+      },
+    }).then(() => { console.log('Sucessfully updated access_token on heroku...') });
+  }
 });
 
 export { invoiceQueue };
