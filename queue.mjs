@@ -3,7 +3,7 @@ import Heroku from 'heroku-client';
 import moment from 'moment';
 import TelegramBot from 'node-telegram-bot-api';
 import { createOrderPdf } from './pdf.mjs';
-import { checkAccessToken, processOrder, refreshAccessToken } from './quickbooks.mjs';
+import { checkAccessToken, processOrder } from './quickbooks.mjs';
 const invoiceQueue = new Queue('Generate Invoice', process.env.REDIS_URL || 'redis://127.0.0.1:6379');
 const teleBot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN); // use polling if need to access messages
 //const CHICKEN_ORDER_BOT = '-400162180'
