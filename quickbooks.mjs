@@ -95,7 +95,7 @@ async function filterQuery(payload, stock) {
         const { Id, Name, UnitPrice } = stockItem;
         const lineBase = {
           DetailType: 'SalesItemLineDetail',
-          Amount: UnitPrice * quantity,
+          Amount: UnitPrice * item.quantity,
           SalesItemLineDetail: {
             ItemRef: { value: Id, name: Name },
             Qty: item.quantity,
