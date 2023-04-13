@@ -21,7 +21,7 @@ let qbo = new QuickBooks(process.env.QUICKBOOKS_CLIENT,
 async function processOrder(payload) {
 
   try {
-    let { _customer: customer, _stock: stock, _date: date } = await _queryPayload(payload);
+    let { _customer: customer, _stock: stock } = await _queryPayload(payload);
     let { _line: line, _rej: reject } = await _filterQuery(payload, stock);
     console.log(`line: ${line}`)
     console.log(`rejected: ${reject}`)
@@ -29,6 +29,7 @@ async function processOrder(payload) {
     console.log(`invNum: ${invNum}`)
 
     const _invParams = {
+      TxnDate: moment(payload.date).format('YYYY/MM/DD'),
       CustomerRef: {
         value: customer.Id,
         name: customer.DisplayName,
@@ -44,7 +45,7 @@ async function processOrder(payload) {
       name: customer.DisplayName,
       address: ''.concat(customer.BillAddr.Line1, ',', customer.BillAddr.City, ', ', customer.BillAddr.PostalCode, ', ', customer.BillAddr.CountrySubDivisionCode),
       number: _invParams.DocNumber,
-      date: moment(_date, 'M/D/YYYY H:mm:ss').format('YYYY-MM-DD'),
+      date: moment(payload.date).format('YYYY-MM-DD'),
       stock: line.length > 0 ? line : [],
       nostock: reject.length > 0 ? reject : []
     };
@@ -52,7 +53,7 @@ async function processOrder(payload) {
     console.log(`PDF PARAMS: ${pdfparams}`)
 
     return { invoice, pdfparams };
-  } catch (err) { console.log(err.Fault); }
+  } catch (err) { console.log(err); throw err; }
 }
 
 async function _queryPayload(_payload) {
