@@ -17,13 +17,15 @@ const TABLE_WIDTHS = [
     '5%', '50%', '20%', '20%', '5%'
 ];
 
-const TABLE_HEADER = [
+const TABLE_HEADER = [[
     { text: 'No', style: 'tableHeader' },
     { text: 'Product Name', style: 'tableHeader' },
     { text: 'Order Quantity', style: 'tableHeader' },
     { text: 'Quantity on Hand', style: 'tableHeader' },
     { text: 'Accepted', style: 'tableHeader' },
-];
+], 
+// spacing for rowSpan = 2
+[ '','','','','',]];
 
 const TABLE_FOOTER = {
     text: 'This is not an invoice. This is a computer generated document and does not require a signature',
@@ -125,7 +127,7 @@ async function createOrderPdf(orderDetails) {
                 bold: true,
                 rowSpan: 2,
                 alignment: 'center',
-                //noWrap: false, // to allow text wrapping
+                noWrap: false, // to allow text wrapping
             },
         },
         footer: TABLE_FOOTER,
