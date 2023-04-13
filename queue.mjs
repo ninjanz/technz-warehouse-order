@@ -49,7 +49,7 @@ invoiceQueue.on('completed', (job, result) => {
 });
 
 invoiceQueue.on('failed', (job, error) => {
-  console.log(`Job ${job.id} error - ${error.message}`);
+  console.log(`Job ${job.id} error - ${JSON.stringify(error, ["message", "arguments", "type", "name"])}`);
   teleBot.sendMessage(PLASTIC_ORDER_SHOPS, `${job.id} - ${error.message}`);
 
   if (error.tokenNeedsRefresh) {
