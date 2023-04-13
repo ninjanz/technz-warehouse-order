@@ -15,8 +15,8 @@ const quickBooks = new QuickBooks(
   process.env.QUICKBOOKS_REFRESH_TOKEN);
 
 async function processOrder(payload) {
-  let tokenTest = await quickBooks.findCompanyInfos()
-  console.log(tokenTest);
+  //let tokenTest = await quickBooks.findCompanyInfos()
+  //console.log(tokenTest);
 
   let orderDetails = {
     name: '',
@@ -28,8 +28,8 @@ async function processOrder(payload) {
 
   try {
     // search the customer details
-    let customer = (await quickBooks.findCustomers({ DisplayName: payload.customer })).QueryResponse.Customer[0];
-    console.log(customer);
+    const customer = (await quickBooks.findCustomers({ DisplayName: payload.customer })).QueryResponse.Customer[0];
+    //console.log(customer);
     // create a list of items that need to be searched on qb and then find their details
     const items = payload.items.map(item => item.sku);
     const stock = (await quickBooks.findItems({ Sku: items })).QueryResponse.Item;
@@ -51,7 +51,7 @@ async function processOrder(payload) {
 
     // the email status parameter will be set to EmailSent then get the invoice from server
     invoiceObj = await quickBooks.sendInvoicePdf(invoiceObj.Id, STORE_EMAIL);
-    invoicePdf = await quickBooks.getInvoicePdf(invoiceObj.Id)
+    let invoicePdf = await quickBooks.getInvoicePdf(invoiceObj.Id)
 
     orderDetails = {
       name: customer.DisplayName,
