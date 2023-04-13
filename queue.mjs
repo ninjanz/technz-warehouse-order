@@ -20,6 +20,7 @@ invoiceQueue.process(async (job, done) => {
     // create the invoice and order pdf object
     let { invoicePdf, orderDetails, invNum } = await processOrder(job.data);
     let orderPdf = await createOrderPdf(orderDetails)
+    console.log(`pdf created!`);
 
     done(null, { tokenNeedsRefresh, filename, invNum, orderPdf, invoicePdf });
 
