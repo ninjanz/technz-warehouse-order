@@ -30,7 +30,7 @@ async function createOrderTableBody(orderDetails) {
         idx % 2 === 0 ? (isAccepted ? '#EAFAF1' : '#F9EBEA') : isAccepted ? '#D5F5E3' : '#F2D7D5';
 
     const rows = [
-        ...orderDetails.pdfList.map((item, idx) => [
+        ...orderDetails.map((item, idx) => [
             { text: idx + 1, alignment: 'center', fillColor: fillCell(idx, item.acceptedBool) },
             { text: item.name, fillColor: fillCell(idx, item.acceptedBool) },
             { text: item.qty, alignment: 'center', fillColor: fillCell(idx, item.acceptedBool) },
@@ -43,7 +43,7 @@ async function createOrderTableBody(orderDetails) {
 }
 
 async function createOrderPdf(orderDetails) {
-    const { name, address, number, date, stock, nostock } = orderDetails;
+    const { name, address, number, date, pdfList } = orderDetails;
     const printer = new PdfPrinter(FONTS)
 
     const docDefinition = {
@@ -94,7 +94,7 @@ async function createOrderPdf(orderDetails) {
                 table: {
                     widths: TABLE_WIDTHS,
                     headerRows: 1,
-                    body: createOrderTableBody(stock, nostock),
+                    body: createOrderTableBody(pdfList),
                     layout: {
                         hLineWidth: function (i, node) {
                             if (i === 0 || i === node.table.body.length) return 0
