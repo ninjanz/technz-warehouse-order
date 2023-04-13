@@ -100,7 +100,7 @@ async function createOrderPdf(orderDetails) {
                     widths: TABLE_WIDTHS,
                     headerRows: 1,
                     body: await createOrderTableBody(pdfList),
-                    layout: 'lightHorizontalLines'/*{
+                    layout: {
                         // function to change line width of cells
                         hLineWidth: function (i, node) {
                             if (i === 0 || i === node.table.body.length) return 0;
@@ -108,8 +108,7 @@ async function createOrderPdf(orderDetails) {
                             else return 1;
                         },
                         vLineWidth: 0,
-
-                    }*/
+                    }
                 },
             },],
         styles: {
@@ -125,7 +124,7 @@ async function createOrderPdf(orderDetails) {
                 bold: true,
                 rowSpan: 2,
                 alignment: 'center',
-                noWrap: false, // to allow text wrapping
+                //noWrap: false, // to allow text wrapping
             },
         },
         footer: TABLE_FOOTER,
