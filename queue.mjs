@@ -21,6 +21,8 @@ invoiceQueue.process(async (job, done) => {
     let { invoicePdf, orderDetails, invNum } = await processOrder(job.data);
     let orderPdf = await createOrderPdf(orderDetails)
     console.log(`pdf created!`);
+    await teleBot.sendDocument(PLASTIC_ORDER_SHOPS, result.orderPdf, {}, { filename: `${result.filename}.pdf` })
+
 
     done(null, { tokenNeedsRefresh, filename, invNum, orderPdf, invoicePdf });
 
@@ -34,7 +36,6 @@ invoiceQueue.on('completed', (job, result) => {
   console.log(`Job ${job.id} completed successfully!`);
   teleBot.sendMessage(PLASTIC_ORDER_HQ, `Job ${job.id} completed successfully!`);
   // send the invoice and order pdf object to telegram
-  teleBot.sendDocument(PLASTIC_ORDER_SHOPS, result.orderPdf, {}, { filename: `${result.filename}.pdf` })
   teleBot.sendDocument(PLASTIC_ORDER_SHOPS, result.invoicePdf, {}, { filename: `${result.invNum}.pdf` })
 
   if (result.tokenNeedsRefresh) {
@@ -51,7 +52,7 @@ invoiceQueue.on('completed', (job, result) => {
 });
 
 invoiceQueue.on('failed', (job, error) => {
-  console.log(`Job ${job.id} error - ${JSON.stringify(error, ["message", "arguments", "type", "name"])}`);
+  //console.log(`Job ${job.id} error - ${JSON.stringify(error, ["message", "arguments", "type", "name"])}`);
   teleBot.sendMessage(PLASTIC_ORDER_SHOPS, `${job.id} - ${error.message}`);
 
   if (error.tokenNeedsRefresh) {
