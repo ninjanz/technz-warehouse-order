@@ -44,13 +44,13 @@ async function createOrderTableBody(orderDetails) {
 
 async function createOrderPdf(orderDetails) {
     const { name, address, number, date, pdfList } = orderDetails;
-    const printer = new PdfPrinter(FONTS)
+    const printer = new PdfPrinter(FONTS);
 
     const docDefinition = {
         content: [
             {
                 text: 'NZ Curry House @ Warehouse\n\n',
-                bold: true,
+                //bold: true,
                 fontSize: 20,
                 alignment: 'center'
             },
@@ -59,7 +59,7 @@ async function createOrderPdf(orderDetails) {
                     {
                         text: `${name}\n`,
                         fontSize: 16,
-                        bold: true,
+                        //bold: true,
                         width: '50%'
                     }]
             },
@@ -81,7 +81,7 @@ async function createOrderPdf(orderDetails) {
                     {
                         text: `Order List`,
                         alignment: 'center',
-                        bold: true,
+                        //bold: true,
                         fontSize: 16
                     },
                     {
@@ -116,7 +116,7 @@ async function createOrderPdf(orderDetails) {
                 italics: true,
             },
             tableHeader: {
-                bold: true,
+                //bold: true,
                 rowSpan: 2,
                 alignment: 'center',
                 noWrap: false, // to allow text wrapping
