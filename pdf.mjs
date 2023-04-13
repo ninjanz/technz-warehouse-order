@@ -1,21 +1,22 @@
 import PdfPrinter from 'pdfmake';
 
 const FONTS = {
-    Roboto: {
-        normal: 'fonts/Roboto-Regular.ttf',
-        bold: 'fonts/Roboto-Medium.ttf',
-        italics: 'fonts/Roboto-Italic.ttf',
+    FiraSans: {
+        normal: 'fonts/FiraSans-Regular.ttf',
+        bold: 'fonts/FiraSans-Medium.ttf',
+        italics: 'fonts/FiraSans-Italic.ttf',
     },
 };
 
 const TABLE_WIDTHS = [
-    '5%', '60%', '20%', '15%'
+    '5%', '50%', '20%', '20%', '5%'
 ];
 
 const TABLE_HEADER = [
     { text: 'No', style: 'tableHeader' },
     { text: 'Product Name', style: 'tableHeader' },
     { text: 'Order Quantity', style: 'tableHeader' },
+    { text: 'Quantity on Hand', style: 'tableHeader' },
     { text: 'Accepted', style: 'tableHeader' },
 ];
 
@@ -24,22 +25,17 @@ const TABLE_FOOTER = {
     style: ['footer', 'alignCenter'],
 };
 
-async function createOrderTableBody(acceptedItems, rejectedItems) {
+async function createOrderTableBody(orderDetails) {
     const fillCell = (idx, isAccepted) =>
         idx % 2 === 0 ? (isAccepted ? '#EAFAF1' : '#F9EBEA') : isAccepted ? '#D5F5E3' : '#F2D7D5';
 
     const rows = [
-        ...acceptedItems.map((item, idx) => [
-            { text: idx + 1, alignment: 'center', fillColor: fillCell(idx, true) },
-            { text: item.SalesItemLineDetail.ItemRef.name, fillColor: fillCell(idx, true) },
-            { text: item.SalesItemLineDetail.Qty, alignment: 'center', fillColor: fillCell(idx, true) },
-            { text: 'Y', alignment: 'center', fillColor: fillCell(idx, true) },
-        ]),
-        ...rejectedItems.map((item, idx) => [
-            { text: idx + 1, alignment: 'center', fillColor: fillCell(idx, false) },
-            { text: item.name, fillColor: fillCell(idx, false) },
-            { text: item.qty, alignment: 'center', fillColor: fillCell(idx, false) },
-            { text: 'N', alignment: 'center', fillColor: fillCell(idx, false) },
+        ...orderDetails.map((item, idx) => [
+            { text: idx + 1, alignment: 'center', fillColor: fillCell(idx, item.acceptedBool) },
+            { text: item.name, fillColor: fillCell(idx, item.acceptedBool) },
+            { text: item.qty, alignment: 'center', fillColor: fillCell(idx, item.acceptedBool) },
+            { text: item.qtyAvailable, alignment: 'center', fillColor: fillCell(idx, item.acceptedBool) },
+            { text: item.acceptedBool ? 'Y' : 'N', alignment: 'center', fillColor: fillCell(idx, item.acceptedBool) },
         ]),
     ];
 
@@ -112,7 +108,7 @@ async function createOrderPdf(orderDetails) {
             },],
         styles: {
             defaultStyle: {
-                font: 'Roboto',
+                font: 'FiraSans',
                 fontSize: 12
             },
             footer: {
@@ -123,6 +119,7 @@ async function createOrderPdf(orderDetails) {
                 bold: true,
                 rowSpan: 2,
                 alignment: 'center',
+                noWrap: false, // to allow text wrapping
             },
         },
         footer: TABLE_FOOTER,

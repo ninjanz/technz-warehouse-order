@@ -15,76 +15,98 @@ const quickBooks = new QuickBooks(
   process.env.QUICKBOOKS_REFRESH_TOKEN);
 
 async function processOrder(payload) {
+  let orderPdfParams = {
+    name: '',
+    address: '',
+    number: '',
+    date: '',
+    pdfList: []
+  }
+
   try {
+    // search the customer details
     const { customer } = await quickBooks.findCustomers({ DisplayName: payload.customer }).QueryResponse.Customer[0];
+
+    // create a list of items that need to be searched on qb and then find their details
     const items = payload.items.map(item => item.sku);
     const stock = await quickBooks.findItems({ Sku: items }).QueryResponse.Item;
-    const { line: lineItems, rejected: rejectedItems } = await filterQuery(payload, stock);
+
+    // check which of the ordered items are available in stock
+    const { lineItems, pdfList } = await filterQuery(payload, stock);
     const invNum = await findNextInvoiceNumber();
 
-    const invParams = {
+    // create the invoice on quickbooks
+    let invoiceObj = await quickBooks.createInvoice({
+      TxnDate: moment(payload.date).format('YYYY-MM-DD'),
+      DocNumber: invNum,
       CustomerRef: {
         value: customer.Id,
         name: customer.DisplayName,
       },
       Line: lineItems,
-      DueDate: moment().format('YYYY-MM-DD'),
-      DocNumber: invNum,
-    };
+    })
 
-    let invoice = await quickBooks.createInvoice(invParams);
-    // the email status parameter will be set to EmailSent
-    invoice = await quickBooks.sendInvoicePdf(invoice.Id, STORE_EMAIL);
-    invoicePdf = await quickBooks.getInvoicePdf(invoice.Id)
+    // the email status parameter will be set to EmailSent then get the invoice from server
+    invoiceObj = await quickBooks.sendInvoicePdf(invoiceObj.Id, STORE_EMAIL);
+    invoicePdf = await quickBooks.getInvoicePdf(invoiceObj.Id)
 
-    const pdfparams = {
+    orderDetails = {
       name: customer.DisplayName,
       address: `${customer.BillAddr.Line1}, ${customer.BillAddr.City}, ${customer.BillAddr.PostalCode}, ${customer.BillAddr.CountrySubDivisionCode}`,
       number: invParams.DocNumber,
-      date: moment().format('YYYY-MM-DD'),
-      stock: lineItems.length > 0 ? lineItems : [],
-      nostock: rejectedItems.length > 0 ? rejectedItems : []
+      date: moment(payload.date).format('YYYY-MM-DD'),
+      pdfList: pdfList.length > 0 ? pdfList : []
     };
-  } catch (err) { throw err; }
+  } catch (err) { console.log(err) }
 
-  console.log(`PDF PARAMS: ${pdfparams}`);
+  console.log(`ORDER PDF DETAILS: ${orderDetails}`);
 
-  return { invoice, invoicePdf, pdfparams };
+  return { invoicePdf, orderDetails, invNum };
 }
 
 async function filterQuery(payload, stock) {
   const lineItems = [];
-  const rejectedItems = [];
+  const pdfList = [];
 
   for (const item of payload.items) {
     const stockItem = stock.find(s => s.Sku === item.sku);
 
     if (!stockItem) {
-      // Item not found in stock
-      rejectedItems.push({ name: item.name, qty: item.quantity });
-    } else if (stockItem.QtyOnHand < item.quantity) {
-      // Not enough quantity in stock
-      rejectedItems.push({ name: stockItem.Name, qty: item.quantity });
-    } else {
-      // Item found in stock and quantity is sufficient
-      const { Id, Name, UnitPrice, QtyOnHand } = stockItem;
-      const { sku, quantity } = item;
-      const lineBase = {
-        DetailType: 'SalesItemLineDetail',
-        Amount: UnitPrice * quantity,
-        SalesItemLineDetail: {
-          ItemRef: { value: Id, name: Name },
-          Qty: quantity,
-          UnitPrice,
-        },
-      };
+      // if item does not exist
+      pdfList.push({
+        name: item.name,
+        qty: item.quantity,
+        qtyAvailable: 'N/A'
+      });
+    }
 
-      lineItems.push(lineBase);
+    else {
+      pdfList.push({
+        name: stockItem.Name,
+        qty: item.quantity,
+        qtyAvailable: stockItem.QtyOnHand,
+        acceptedBool: stockItem.QtyOnHand > item.quantity ? true : false
+      });
+
+      if (stockItem.QtyOnHand > item.quantity) {
+        const { Id, Name, UnitPrice } = stockItem;
+        const lineBase = {
+          DetailType: 'SalesItemLineDetail',
+          Amount: UnitPrice * quantity,
+          SalesItemLineDetail: {
+            ItemRef: { value: Id, name: Name },
+            Qty: item.quantity,
+            UnitPrice,
+          }
+        };
+        // add the available items to the list for invoice processing
+        lineItems.push(lineBase);
+      }
     }
   }
 
-  return { lineItems, rejectedItems };
-};
+  return { lineItems, pdfList };
+}
 
 async function findNextInvoiceNumber() {
   const lastInvoiceNumber = await findLastInvoiceNumber();
@@ -147,7 +169,7 @@ async function refreshAccessToken() {
     process.env.QUICKBOOKS_REFRESH_TOKEN = refresh_response.refresh_token
     process.env.QUICKBOOKS_LAST_REFRESH = dateNow
 
-  } catch (err) { console.log('Error at app.get/update-token: ', err); }
+  } catch (err) { console.log('Error at method: quickbooks/refreshAccessToken(): ', err); }
 }
 
 
