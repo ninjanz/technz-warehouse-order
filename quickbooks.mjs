@@ -15,7 +15,7 @@ const quickBooks = new QuickBooks(
   process.env.QUICKBOOKS_REFRESH_TOKEN);
 
 async function processOrder(payload) {
-  let orderPdfParams = {
+  let orderDetails = {
     name: '',
     address: '',
     number: '',
@@ -25,11 +25,11 @@ async function processOrder(payload) {
 
   try {
     // search the customer details
-    const { customer } = await quickBooks.findCustomers({ DisplayName: payload.customer }).QueryResponse.Customer[0];
+    const { customer } = await (quickBooks.findCustomers({ DisplayName: payload.customer })).QueryResponse.Customer[0];
 
     // create a list of items that need to be searched on qb and then find their details
     const items = payload.items.map(item => item.sku);
-    const stock = await quickBooks.findItems({ Sku: items }).QueryResponse.Item;
+    const stock = (await quickBooks.findItems({ Sku: items })).QueryResponse.Item;
 
     // check which of the ordered items are available in stock
     const { lineItems, pdfList } = await filterQuery(payload, stock);
