@@ -63,7 +63,7 @@ async function processOrder(payload) {
     };
   } catch (err) { console.log(err) }
 
-  console.log(`ORDER PDF DETAILS: ${orderDetails}`);
+  console.log(`ORDER PDF DETAILS: ${JSON.stringify(orderDetails)}`);
 
   return { invoicePdf, orderDetails, invNum };
 }
@@ -100,7 +100,7 @@ async function filterQuery(payload, stock) {
           SalesItemLineDetail: {
             ItemRef: { value: Id, name: Name },
             Qty: item.quantity,
-            UnitPrice,
+            UnitPrice: UnitPrice,
           }
         };
         // add the available items to the list for invoice processing

@@ -94,7 +94,7 @@ async function createOrderPdf(orderDetails) {
                 table: {
                     widths: TABLE_WIDTHS,
                     headerRows: 1,
-                    body: createOrderTableBody(pdfList),
+                    body: await createOrderTableBody(pdfList),
                     layout: {
                         hLineWidth: function (i, node) {
                             if (i === 0 || i === node.table.body.length) return 0
