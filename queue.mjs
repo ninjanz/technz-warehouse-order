@@ -13,12 +13,9 @@ const PLASTIC_ORDER_SHOPS = '-487982914'
 invoiceQueue.process(async (job, done) => {
   try {
     console.log(`Create Invoice - Job #${job.id} Received!`);
-    let filename = `${moment(job.data.date).format('YYMMDD')}-${job.data.customer}`
-
-    // check if the access token is valid; refresh the access token if necessary
     let tokenNeedsRefresh = await checkAccessToken()
-    //if (tokenNeedsRefresh) { await refreshAccessToken(); }
-
+    let filename = `${moment(job.data.date).format('YYMMDD')}-${job.data.customer}`
+    
     // create the invoice and order pdf object
     let { invoicePdf, orderDetails, invNum } = await processOrder(job.data);
     let orderPdf = await createOrderPdf(orderDetails)
