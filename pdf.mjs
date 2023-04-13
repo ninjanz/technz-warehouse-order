@@ -30,7 +30,7 @@ async function createOrderTableBody(orderDetails) {
         idx % 2 === 0 ? (isAccepted ? '#EAFAF1' : '#F9EBEA') : isAccepted ? '#D5F5E3' : '#F2D7D5';
 
     const rows = [
-        ...orderDetails.map((item, idx) => [
+        ...orderDetails.pdfList.map((item, idx) => [
             { text: idx + 1, alignment: 'center', fillColor: fillCell(idx, item.acceptedBool) },
             { text: item.name, fillColor: fillCell(idx, item.acceptedBool) },
             { text: item.qty, alignment: 'center', fillColor: fillCell(idx, item.acceptedBool) },
