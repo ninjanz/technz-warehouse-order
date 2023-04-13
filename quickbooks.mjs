@@ -39,20 +39,22 @@ async function processOrder(payload) {
     const { lineItems, pdfList } = await filterQuery(payload, stock);
     invNum = await findNextInvoiceNumber();
 
-    // create the invoice on quickbooks
-    let invoiceObj = await quickBooks.createInvoice({
-      TxnDate: moment(payload.date).format('YYYY-MM-DD'),
-      DocNumber: invNum,
-      CustomerRef: {
-        value: customer.Id,
-        name: customer.DisplayName,
-      },
-      Line: lineItems,
-    })
+    // create the invoice on quickbooks only if there are items available
+    if (lineItems.length > 0) {
+      let invoiceObj = await quickBooks.createInvoice({
+        TxnDate: moment(payload.date).format('YYYY-MM-DD'),
+        DocNumber: invNum,
+        CustomerRef: {
+          value: customer.Id,
+          name: customer.DisplayName,
+        },
+        Line: lineItems,
+      })
 
-    // the email status parameter will be set to EmailSent then get the invoice from server
-    invoiceObj = await quickBooks.sendInvoicePdf(invoiceObj.Id, STORE_EMAIL);
-    invoicePdf = await quickBooks.getInvoicePdf(invoiceObj.Id);
+      // the email status parameter will be set to EmailSent then get the invoice from server
+      invoiceObj = await quickBooks.sendInvoicePdf(invoiceObj.Id, STORE_EMAIL);
+      invoicePdf = await quickBooks.getInvoicePdf(invoiceObj.Id);
+    }
 
     orderDetails = {
       name: customer.DisplayName,
