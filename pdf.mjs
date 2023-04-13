@@ -48,6 +48,7 @@ async function createOrderTableBody(orderDetails) {
 }
 
 async function createOrderPdf(orderDetails) {
+    try{
     const { name, address, number, date, pdfList } = orderDetails;
     const printer = new PdfPrinter(FONTS);
 
@@ -136,6 +137,7 @@ async function createOrderPdf(orderDetails) {
     doc.end();
 
     return doc
+} catch (err) { console.log(err); }
 }
 
 export { createOrderPdf };
