@@ -131,7 +131,7 @@ async function createOrderPdf(orderDetails) {
 
     }
 
-    console.log(`doc definition: ${doc}`);
+    console.log(`doc definition: ${docDefinition}`);
     const doc = await printer.createPdfKitDocument(docDefinition)
     doc.end();
 

@@ -24,6 +24,7 @@ invoiceQueue.process(async (job, done) => {
     done(null, { tokenNeedsRefresh, filename, invNum, orderPdf, invoicePdf });
 
   } catch (error) { 
+    console.log(`Error - ${error}`);
     error.tokenNeedsRefresh = tokenNeedsRefresh;
     done(error); } 
 });
