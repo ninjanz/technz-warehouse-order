@@ -145,22 +145,25 @@ async function findLastInvoiceNumber() {
   } catch (err) { console.error(err); throw err; }
 }
 
-function checkAccessToken() {
+async function checkAccessToken() {
+  let refreshBool = false;
   const timeNow = new Date();
   const lastRefresh = process.env.QUICKBOOKS_LAST_REFRESH === '' ? new Date(timeNow - (60 * 1000 * 60)) : new Date(process.env.QUICKBOOKS_LAST_REFRESH);
   const timeDiff = (timeNow - lastRefresh) / (1000 * 60);
 
-  console.log('timeNow: ', timeNow, ', lastRefresh: ', lastRefresh.toISOString(), ', timeDiff: ', timeDiff);
+  console.log(`timeNow: ${timeNow}, lastRefresh: ${lastRefresh.toISOString()}, timeDiff: ${timeDiff}`);
 
-  return timeDiff >= 55;
+  if (timeDiff >= 55) { refreshAccessToken(); refreshBool = true};
+
+  return refreshBool;
 }
 
 async function refreshAccessToken() {
   try {
     const refresh_response = await quickBooks.refreshAccessToken();
     const dateNow = new Date();
-    console.log("Access Token Refreshed at: ", dateNow.toString(), " / ", dateNow.getTime())
-    console.log("Refresh Response: ", refresh_response)
+    console.log(`Access Token Refreshed at: ${dateNow.toString()}`)
+    console.log(`Refresh Response: ${refresh_response}`)
 
     quickBooks.token = refresh_response.access_token
     quickBooks.refreshToken = refresh_response.refresh_token
@@ -173,4 +176,4 @@ async function refreshAccessToken() {
 }
 
 
-export { processOrder, checkAccessToken, refreshAccessToken };
+export { processOrder, checkAccessToken };
