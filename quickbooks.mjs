@@ -17,7 +17,7 @@ const quickBooks = new QuickBooks(
 async function processOrder(payload) {
   //let tokenTest = await quickBooks.findCompanyInfos()
   //console.log(tokenTest);
-
+  let invoicePdf = null;
   let orderDetails = {
     name: '',
     address: '',
@@ -51,7 +51,7 @@ async function processOrder(payload) {
 
     // the email status parameter will be set to EmailSent then get the invoice from server
     invoiceObj = await quickBooks.sendInvoicePdf(invoiceObj.Id, STORE_EMAIL);
-    let invoicePdf = await quickBooks.getInvoicePdf(invoiceObj.Id)
+    invoicePdf = await quickBooks.getInvoicePdf(invoiceObj.Id);
 
     orderDetails = {
       name: customer.DisplayName,
