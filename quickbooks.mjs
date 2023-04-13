@@ -56,7 +56,7 @@ async function processOrder(payload) {
     orderDetails = {
       name: customer.DisplayName,
       address: `${customer.BillAddr.Line1}, ${customer.BillAddr.City}, ${customer.BillAddr.PostalCode}, ${customer.BillAddr.CountrySubDivisionCode}`,
-      number: invParams.DocNumber,
+      number: invNum,
       date: moment(payload.date).format('YYYY-MM-DD'),
       pdfList: pdfList.length > 0 ? pdfList : []
     };
