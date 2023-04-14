@@ -99,15 +99,16 @@ async function createOrderPdf(orderDetails) {
                         widths: TABLE_WIDTHS,
                         headerRows: 1,
                         body: await createOrderTableBody(pdfList),
-                        layout: {
-                            // function to change line width of cells
-                            hLineWidth: function (i, node) {
-                                if (i === 0 || i === node.table.body.length) return 0;
-                                else if (i === 1) return 2;
-                                else return 1;
-                            },
-                            vLineWidth: 0,
-                        }
+                    },
+                    layout: {
+                        // function to change line width of cells
+                        hLineWidth: function (i, node) {
+                            if (i === 0 || i === node.table.body.length) return 0;
+                            else if (i === 1) return 2;
+                            else return 1;
+                        },
+                        vLineWidth: 0,
+
                     },
                 },],
             defaultStyle: {
