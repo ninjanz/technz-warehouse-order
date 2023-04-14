@@ -19,11 +19,11 @@ const PAGE_HEADER_WIDTHS = ['60%', '20%', '20%'];
 const ORDER_TABLE_HEADER =
     [
         [
-            { text: 'No', style: 'tableHeader' },
-            { text: 'Product Name', style: 'tableHeader' },
-            { text: 'Order Quantity', style: 'tableHeader' },
-            { text: 'Quantity on Hand', style: 'tableHeader' },
-            { text: 'Accepted', style: 'tableHeader' },
+            { text: 'No', style: 'orderTableHeader' },
+            { text: 'Product Name', style: 'orderTableHeader' },
+            { text: 'Order Quantity', style: 'orderTableHeader' },
+            { text: 'Quantity on Hand', style: 'orderTableHeader' },
+            { text: 'Accepted', style: 'orderTableHeader' },
         ],
         ['', '', '', '', '',] // spacing for rowSpan = 2
     ];
@@ -87,39 +87,14 @@ async function createOrderPdf(orderDetails) {
                     layout: {
                         // function to change line width of cells
                         hLineWidth: function (i, node) {
-                            if (i === node.table.body.length) return 2;
+                            //if (i === node.table.body.length) return 2;
+                            return 0;
                         },
                         vLineWidth: function (i, node) {
                             return 0;
                         }
                     },
                 },
-                /*{
-                    columns: [
-                        {
-                            text: `${name}\n`,
-                            fontSize: 16,
-                            bold: true,
-                            width: '50%'
-                        }, {
-                            text: `Order #: ${number}`,
-                            alignment: 'right',
-                            fontSize: 16
-                        },]
-                },
-                {
-                    columns: [
-                        {
-                            text: `${address}\n`,
-                            fontSize: 16,
-                            width: '50%'
-                        },
-                        {
-                            text: `Order Date: ${date}`,
-                            alignment: 'right',
-                            fontSize: 16
-                        },]
-                },*/
                 // Order Details
                 {
                     table: {
@@ -130,7 +105,8 @@ async function createOrderPdf(orderDetails) {
                     layout: {
                         // function to change line width of cells
                         hLineWidth: function (i, node) {
-                            if (i === 0 || (i === 1) || i === node.table.body.length) return 2;
+                            if (i === 0 || (i === 2) || i === node.table.body.length) return 2;
+                            if (i === 1) return 0;
                             else return 1;
                         },
                         vLineWidth: function (i, node) {
