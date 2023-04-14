@@ -113,7 +113,6 @@ async function createOrderPdf(orderDetails) {
             defaultStyle: {
                 font: 'FiraSans',
                 fontSize: 12,
-                italics: true,
             },
             styles: {
                 footerStyle: {
