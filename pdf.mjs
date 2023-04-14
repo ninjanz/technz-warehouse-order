@@ -59,10 +59,11 @@ async function createOrderPdf(orderDetails) {
             content: [
                 // Page Title
                 {
-                    text: `Store Order List\n`,
+                    text: `Store Order List`,
                     bold: true,
                     fontSize: 20,
-                    alignment: 'center'
+                    alignment: 'center',
+                    lineHeight: 3,
                 },
                 // Invoice Header
                 {
@@ -71,18 +72,18 @@ async function createOrderPdf(orderDetails) {
                         body: [
                             [
                                 { text: `Customer & Address:`, style: { bold: true } },
-                                { text: '' }, 
-                                { text: '' },
-                            ],
-                            [
-                                { text: `${name}`},
                                 { text: `Invoice #:`, style: { bold: true, alignment: 'right' } },
                                 { text: `${number}`, style: { alignment: 'left' } },
                             ],
                             [
-                                { text: `${address}`, rowSpan: 3, style: { italics: true }  }, 
-                                { text: `Order Date:`, style: { bold: true, alignment: 'right' } }, 
+                                { text: `${name}`},
+                                { text: `Order Date:`, style: { bold: true, alignment: 'right' } },
                                 { text: `${date}`,style: { alignment: 'left' } }
+                            ],
+                            [
+                                { text: `${address}`, rowSpan: 3, style: { italics: true }  }, 
+                                { text: '' },
+                                { text: '' },
                             ],
                             // To provide spacing for RowSpan
                             [{ text: '' }, { text: '' }, { text: '' }],
@@ -101,7 +102,7 @@ async function createOrderPdf(orderDetails) {
                     },
                 },
                 // Spacing between page header and order list
-                {text: ``, lineHeight: 3},
+                {text: `\n`, lineHeight: 3},
                 // Order Details
                 {
                     table: {
