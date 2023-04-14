@@ -107,8 +107,9 @@ async function createOrderPdf(orderDetails) {
                             else if (i === 1) return 2;
                             else return 1;
                         },
-                        vLineWidth: 0,
-
+                        vLineWidth: function (i, node) {
+                            return 0;
+                        }
                     },
                 },],
             defaultStyle: {
