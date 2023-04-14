@@ -23,7 +23,7 @@ const ORDER_TABLE_HEADER =
             { text: 'Product Name', style: 'orderTableHeader' },
             { text: 'Order Quantity', style: 'orderTableHeader' },
             { text: 'Quantity on Hand', style: 'orderTableHeader' },
-            { text: 'Accepted', style: 'orderTableHeader' },
+            { text: 'Accepted?', style: 'orderTableHeader' },
         ],
         ['', '', '', '', '',] // spacing for rowSpan = 2
     ];
@@ -59,7 +59,7 @@ async function createOrderPdf(orderDetails) {
             content: [
                 // Page Title
                 {
-                    text: `Store Order List`,
+                    text: `Store Order List\n\n`,
                     bold: true,
                     fontSize: 20,
                     alignment: 'center'
@@ -70,12 +70,17 @@ async function createOrderPdf(orderDetails) {
                         widths: PAGE_HEADER_WIDTHS,
                         body: [
                             [
-                                { text: `${name}`, style: { bold: true } },
+                                { text: `Customer & Address:`, style: { bold: true } },
+                                { text: '' }, 
+                                { text: '' },
+                            ],
+                            [
+                                { text: `${name}`},
                                 { text: `Invoice #:`, style: { bold: true, alignment: 'right' } },
                                 { text: `${number}`, style: { alignment: 'left' } },
                             ],
                             [
-                                { text: `${address}`, rowSpan: 3 }, 
+                                { text: `${address}`, rowSpan: 3, style: { italics: true }  }, 
                                 { text: `Order Date:`, style: { bold: true, alignment: 'right' } }, 
                                 { text: `${date}`,style: { alignment: 'left' } }
                             ],
@@ -107,7 +112,7 @@ async function createOrderPdf(orderDetails) {
                         hLineWidth: function (i, node) {
                             if (i === 0 || (i === 2) || i === node.table.body.length) return 2;
                             if (i === 1) return 0;
-                            else return 1;
+                            else return 0.5;
                         },
                         vLineWidth: function (i, node) {
                             return 0;
