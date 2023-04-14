@@ -150,5 +150,3 @@ async function createOrderPdf(orderDetails) {
 }
 
 export { createOrderPdf };
-
-export { createOrderPdf }
