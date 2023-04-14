@@ -1,6 +1,6 @@
 import PdfPrinter from 'pdfmake';
 
-const FONTS = {
+var FONTS = {
     FiraSans: {
         normal: 'fonts/FiraSans-Regular.ttf',
         bold: 'fonts/FiraSans-Medium.ttf',
@@ -63,13 +63,23 @@ async function createOrderPdf(orderDetails) {
                     alignment: 'center'
                 },
                 {
+                    text: `Order List`,
+                    alignment: 'center',
+                    bold: true,
+                    fontSize: 16
+                },
+                {
                     columns: [
                         {
                             text: `${name}\n`,
                             fontSize: 16,
                             bold: true,
                             width: '50%'
-                        }]
+                        },                        {
+                            text: `Order #: ${number}`,
+                            alignment: 'right',
+                            fontSize: 16
+                        },]
                 },
                 {
                     columns: [
@@ -77,20 +87,6 @@ async function createOrderPdf(orderDetails) {
                             text: `${address}\n`,
                             fontSize: 16,
                             width: '50%'
-                        }]
-                },
-                {
-                    columns: [
-                        {
-                            text: `Order #: ${number}`,
-                            alignment: 'left',
-                            fontSize: 16
-                        },
-                        {
-                            text: `Order List`,
-                            alignment: 'center',
-                            bold: true,
-                            fontSize: 16
                         },
                         {
                             text: `Order Date: ${date}`,
@@ -116,7 +112,7 @@ async function createOrderPdf(orderDetails) {
                 },],
             styles: {
                 defaultStyle: {
-                    font: 'Helvetica',
+                    font: 'FiraSans',
                     fontSize: 12
                 },
                 footer: {
