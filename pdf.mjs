@@ -13,19 +13,20 @@ var FONTS = {
     },
 };
 
-const TABLE_WIDTHS = [
-    '5%', '50%', '15%', '15%', '15%'
-];
+const ORDER_TABLE_WIDTHS = ['5%', '50%', '15%', '15%', '15%'];
+const PAGE_HEADER_WIDTHS = ['60%', '20%', '20%'];
 
-const TABLE_HEADER = [[
-    { text: 'No', style: 'tableHeader' },
-    { text: 'Product Name', style: 'tableHeader' },
-    { text: 'Order Quantity', style: 'tableHeader' },
-    { text: 'Quantity on Hand', style: 'tableHeader' },
-    { text: 'Accepted', style: 'tableHeader' },
-],
-// spacing for rowSpan = 2
-['', '', '', '', '',]];
+const ORDER_TABLE_HEADER =
+    [
+        [
+            { text: 'No', style: 'tableHeader' },
+            { text: 'Product Name', style: 'tableHeader' },
+            { text: 'Order Quantity', style: 'tableHeader' },
+            { text: 'Quantity on Hand', style: 'tableHeader' },
+            { text: 'Accepted', style: 'tableHeader' },
+        ],
+        ['', '', '', '', '',] // spacing for rowSpan = 2
+    ];
 
 const TABLE_FOOTER = {
     text: 'This is not an invoice. This is a computer generated document and does not require a signature',
@@ -46,7 +47,7 @@ async function createOrderTableBody(orderDetails) {
         ]),
     ];
 
-    return [...TABLE_HEADER, ...rows];
+    return [...ORDER_TABLE_HEADER, ...rows];
 }
 
 async function createOrderPdf(orderDetails) {
@@ -56,19 +57,44 @@ async function createOrderPdf(orderDetails) {
 
         const docDefinition = {
             content: [
+                // Page Title
                 {
-                    text: 'NZ Curry House @ Warehouse\n\n',
+                    text: `Store Order List`,
                     bold: true,
                     fontSize: 20,
                     alignment: 'center'
                 },
+                // Invoice Header
                 {
-                    text: `Order List`,
-                    alignment: 'center',
-                    bold: true,
-                    fontSize: 16
+                    table: {
+                        widths: PAGE_HEADER_WIDTHS,
+                        body: [
+                            [
+                                { text: `${name}`, style: { bold: true } },
+                                { text: `Invoice #:`, style: { bold: true, alignment: 'right' } },
+                                { text: `${number}`, style: { alignment: 'left' } },
+                            ],
+                            [
+                                { text: `${address}`, rowSpan: 3 }, 
+                                { text: `Order Date:`, style: { bold: true, alignment: 'right' } }, 
+                                { text: `${date}`,style: { alignment: 'left' } }
+                            ],
+                            // To provide spacing for RowSpan
+                            [{ text: '' }, { text: '' }, { text: '' }],
+                            [{ text: '' }, { text: '' }, { text: '' }],
+                        ]
+                    },
+                    layout: {
+                        // function to change line width of cells
+                        hLineWidth: function (i, node) {
+                            if (i === node.table.body.length) return 2;
+                        },
+                        vLineWidth: function (i, node) {
+                            return 0;
+                        }
+                    },
                 },
-                {
+                /*{
                     columns: [
                         {
                             text: `${name}\n`,
@@ -93,18 +119,18 @@ async function createOrderPdf(orderDetails) {
                             alignment: 'right',
                             fontSize: 16
                         },]
-                },
+                },*/
+                // Order Details
                 {
                     table: {
-                        widths: TABLE_WIDTHS,
+                        widths: ORDER_TABLE_WIDTHS,
                         headerRows: 1,
                         body: await createOrderTableBody(pdfList),
                     },
                     layout: {
                         // function to change line width of cells
                         hLineWidth: function (i, node) {
-                            if (i === 0 || i === node.table.body.length) return 0;
-                            else if (i === 1) return 2;
+                            if (i === 0 || (i === 1) || i === node.table.body.length) return 2;
                             else return 1;
                         },
                         vLineWidth: function (i, node) {
@@ -122,11 +148,10 @@ async function createOrderPdf(orderDetails) {
                     italics: true,
                     alignment: 'center',
                 },
-                tableHeader: {
+                orderTableHeader: {
                     bold: true,
                     rowSpan: 2,
                     alignment: 'center',
-                    noWrap: false, // to allow text wrapping
                 },
             },
             footer: TABLE_FOOTER,
