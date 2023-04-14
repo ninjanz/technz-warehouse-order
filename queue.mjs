@@ -20,57 +20,45 @@ invoiceQueue.process(async (job, done) => {
     // create the invoice and order pdf object
     let { invoicePdf, orderDetails, invNum } = await processOrder(job.data);
     let orderPdf = await createOrderPdf(orderDetails)
-    console.log(`pdf created!`);
-    await teleBot.sendDocument(PLASTIC_ORDER_SHOPS, orderPdf, {}, { filename: `${filename}.pdf` });
+    
+    //console.log(`pdf created!`);
+    // send the invoice and the order pdf
+    teleBot.sendDocument(PLASTIC_ORDER_SHOPS, orderPdf, {}, { filename: `${filename}.pdf` });
+    if (invoicePdf) {
+      teleBot.sendDocument(PLASTIC_ORDER_SHOPS, invoicePdf, {}, { filename: `${invNum}.pdf` })
+    } else {
+      teleBot.sendMessage(PLASTIC_ORDER_SHOPS, `No invoice generated. Maybe all the items ordered are out of stock...`);
+    }
 
-
-    done(null, { tokenNeedsRefresh, filename, invNum, orderPdf, invoicePdf });
+    done(null, {});
 
   } catch (error) {
     console.log(`Error - ${error}`);
-    error.tokenNeedsRefresh = tokenNeedsRefresh;
     done(error);
+
+  } finally {
+    if (tokenNeedsRefresh) {
+      const heroku = new Heroku({ token: process.env.HEROKU_API_TOKEN });
+
+      heroku.patch(process.env.HEROKU_VARS_URL, {
+        body: {
+          QUICKBOOKS_ACCESS_TOKEN: process.env.QUICKBOOKS_ACCESS_TOKEN,
+          QUICKBOOKS_REFRESH_TOKEN: process.env.QUICKBOOKS_REFRESH_TOKEN,
+          QUICKBOOKS_LAST_REFRESH: process.env.QUICKBOOKS_LAST_REFRESH,
+        },
+      }).then(() => { console.log('Sucessfully updated access_token on heroku...') });
+    }
   }
 });
 
 invoiceQueue.on('completed', (job, result) => {
   console.log(`Job ${job.id} completed successfully!`);
-  teleBot.sendMessage(PLASTIC_ORDER_HQ, `Job ${job.id} completed successfully!`);
-  
-  // send the invoice and order pdf object to telegram
-  //teleBot.sendDocument(PLASTIC_ORDER_SHOPS, result.orderPdf, {}, { filename: `${result.filename}.pdf` })
-  if (result.invoicePdf) {
-    teleBot.sendDocument(PLASTIC_ORDER_SHOPS, result.invoicePdf, {}, { filename: `${result.invNum}.pdf` })
-  } else {teleBot.sendMessage(PLASTIC_ORDER_HQ, `No invoice generated. Maybe all the items ordered are out of stock...`);}
-
-  if (result.tokenNeedsRefresh) {
-    const heroku = new Heroku({ token: process.env.HEROKU_API_TOKEN });
-
-    heroku.patch(process.env.HEROKU_VARS_URL, {
-      body: {
-        QUICKBOOKS_ACCESS_TOKEN: process.env.QUICKBOOKS_ACCESS_TOKEN,
-        QUICKBOOKS_REFRESH_TOKEN: process.env.QUICKBOOKS_REFRESH_TOKEN,
-        QUICKBOOKS_LAST_REFRESH: process.env.QUICKBOOKS_LAST_REFRESH,
-      },
-    }).then(() => { console.log('Sucessfully updated access_token on heroku...') });
-  }
+  teleBot.sendMessage(PLASTIC_ORDER_SHOPS, `Job ${job.id} completed successfully!`);
 });
 
 invoiceQueue.on('failed', (job, error) => {
   console.log(error);
-  teleBot.sendMessage(PLASTIC_ORDER_SHOPS, `${job.id} - ${error.message}`);
-
-  if (error.tokenNeedsRefresh) {
-    const heroku = new Heroku({ token: process.env.HEROKU_API_TOKEN });
-
-    heroku.patch(process.env.HEROKU_VARS_URL, {
-      body: {
-        QUICKBOOKS_ACCESS_TOKEN: process.env.QUICKBOOKS_ACCESS_TOKEN,
-        QUICKBOOKS_REFRESH_TOKEN: process.env.QUICKBOOKS_REFRESH_TOKEN,
-        QUICKBOOKS_LAST_REFRESH: process.env.QUICKBOOKS_LAST_REFRESH,
-      },
-    }).then(() => { console.log('Sucessfully updated access_token on heroku...') });
-  }
+  teleBot.sendMessage(PLASTIC_ORDER_SHOPS, `${job.id} - ${error}`);
 });
 
 export { invoiceQueue };
