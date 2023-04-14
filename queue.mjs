@@ -7,8 +7,8 @@ import { checkAccessToken, processOrder } from './quickbooks.mjs';
 const invoiceQueue = new Queue('Generate Invoice', process.env.REDIS_URL || 'redis://127.0.0.1:6379');
 const teleBot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN); // use polling if need to access messages
 //const CHICKEN_ORDER_BOT = '-400162180'
-const PLASTIC_ORDER_HQ = '-371528263'
-const PLASTIC_ORDER_SHOPS = '-487982914'
+const PLASTIC_ORDER_SHOPS = '-936671955' //test group
+//const PLASTIC_ORDER_SHOPS = '-487982914'
 
 invoiceQueue.process(async (job, done) => {
   let tokenNeedsRefresh = await checkAccessToken()
@@ -25,7 +25,7 @@ invoiceQueue.process(async (job, done) => {
     // send the invoice and the order pdf
     teleBot.sendDocument(PLASTIC_ORDER_SHOPS, orderPdf, {}, { filename: `${filename}.pdf` });
     if (invoicePdf) {
-      teleBot.sendDocument(PLASTIC_ORDER_SHOPS, invoicePdf, {}, { filename: `${invNum}.pdf` })
+      teleBot.sendDocument(PLASTIC_ORDER_SHOPS, invoicePdf, {}, { filename: `${invNum}` })
     } else {
       teleBot.sendMessage(PLASTIC_ORDER_SHOPS, `No invoice generated. Maybe all the items ordered are out of stock...`);
     }

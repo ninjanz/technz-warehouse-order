@@ -29,7 +29,7 @@ const TABLE_HEADER = [[
 
 const TABLE_FOOTER = {
     text: 'This is not an invoice. This is a computer generated document and does not require a signature',
-    style: ['footer', 'alignCenter'],
+    style: 'footerStyle',
 };
 
 async function createOrderTableBody(orderDetails) {
@@ -75,7 +75,7 @@ async function createOrderPdf(orderDetails) {
                             fontSize: 16,
                             bold: true,
                             width: '50%'
-                        },                        {
+                        }, {
                             text: `Order #: ${number}`,
                             alignment: 'right',
                             fontSize: 16
@@ -113,11 +113,13 @@ async function createOrderPdf(orderDetails) {
             styles: {
                 defaultStyle: {
                     font: 'FiraSans',
-                    fontSize: 12
+                    fontSize: 12,
+                    italics: true,
                 },
-                footer: {
+                footerStyle: {
                     fontSize: 10,
                     italics: true,
+                    alignment: 'center',
                 },
                 tableHeader: {
                     bold: true,
@@ -127,7 +129,6 @@ async function createOrderPdf(orderDetails) {
                 },
             },
             footer: TABLE_FOOTER,
-
         }
 
         //console.log(`doc definition: ${JSON.stringify(docDefinition)}`);
