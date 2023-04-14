@@ -1,13 +1,9 @@
 import QuickBooks from 'node-quickbooks-promise';
-import Heroku from 'heroku-client';
 import moment from 'moment';
 
-const heroku = new Heroku({ token: process.env.HEROKU_API_TOKEN });
-const { HEROKU_VARS_URL } = process.env;
-
 const STORE_EMAIL = 'plastic@nzcurryhouse.com';
-
-let qbo = new QuickBooks(process.env.QUICKBOOKS_CLIENT,
+const quickBooks = new QuickBooks(
+  process.env.QUICKBOOKS_CLIENT,
   process.env.QUICKBOOKS_SECRET,
   process.env.QUICKBOOKS_ACCESS_TOKEN,
   false, // no token secret for oAuth 2.0
@@ -19,160 +15,174 @@ let qbo = new QuickBooks(process.env.QUICKBOOKS_CLIENT,
   process.env.QUICKBOOKS_REFRESH_TOKEN);
 
 async function processOrder(payload) {
+  //let tokenTest = await quickBooks.findCompanyInfos()
+  //console.log(tokenTest);
+  let invoicePdf = null;
+  let invNum = null;
+  let orderDetails = {
+    name: '',
+    address: '',
+    number: '',
+    date: '',
+    pdfList: []
+  }
 
   try {
-    let { _customer: customer, _stock: stock } = await _queryPayload(payload);
-    let { _line: line, _rej: reject } = await _filterQuery(payload, stock);
-    console.log(`line: ${line}`)
-    console.log(`rejected: ${reject}`)
-    let invNum = await _findLastInv();
-    console.log(`invNum: ${invNum}`)
+    // search the customer details
+    const customer = (await quickBooks.findCustomers({ DisplayName: payload.customer })).QueryResponse.Customer[0];
+    //console.log(customer);
+    // create a list of items that need to be searched on qb and then find their details
+    const items = payload.items.map(item => item.sku);
+    const stock = (await quickBooks.findItems({ Sku: items })).QueryResponse.Item;
 
-    const _invParams = {
-      TxnDate: moment(payload.date).format('YYYY/MM/DD'),
-      CustomerRef: {
-        value: customer.Id,
-        name: customer.DisplayName,
-      },
-      Line: line,
-      //DueDate: moment().add(30, 'days').format('YYYY-MM-DD'),
-      DocNumber: invNum, // get running number from quickbooks
-    };
+    // check which of the ordered items are available in stock
+    const { lineItems, pdfList } = await filterQuery(payload, stock);
+    invNum = await findNextInvoiceNumber();
 
-    let invoice = await qbo.createInvoice(_invParams);
-    invoice = await qbo.sendInvoicePdf(invoice.Id, STORE_EMAIL);
-    let pdfparams = {
+    // create the invoice on quickbooks only if there are items available
+    if (lineItems.length > 0) {
+      let invoiceObj = await quickBooks.createInvoice({
+        TxnDate: moment(payload.date).format('YYYY-MM-DD'),
+        DocNumber: invNum,
+        CustomerRef: {
+          value: customer.Id,
+          name: customer.DisplayName,
+        },
+        Line: lineItems,
+      })
+
+      // the email status parameter will be set to EmailSent then get the invoice from server
+      invoiceObj = await quickBooks.sendInvoicePdf(invoiceObj.Id, STORE_EMAIL);
+      invoicePdf = await quickBooks.getInvoicePdf(invoiceObj.Id);
+    }
+
+    orderDetails = {
       name: customer.DisplayName,
-      address: ''.concat(customer.BillAddr.Line1, ',', customer.BillAddr.City, ', ', customer.BillAddr.PostalCode, ', ', customer.BillAddr.CountrySubDivisionCode),
-      number: _invParams.DocNumber,
+      address: `${customer.BillAddr.Line1}, ${customer.BillAddr.City}, ${customer.BillAddr.PostalCode}, ${customer.BillAddr.CountrySubDivisionCode}`,
+      number: invNum,
       date: moment(payload.date).format('YYYY-MM-DD'),
-      stock: line.length > 0 ? line : [],
-      nostock: reject.length > 0 ? reject : []
+      pdfList: pdfList.length > 0 ? pdfList : []
     };
+  } catch (err) { console.log(err) }
 
-    console.log(`PDF PARAMS: ${pdfparams}`)
+  console.log(`ORDER PDF DETAILS: ${JSON.stringify(orderDetails)}`);
 
-    return { invoice, pdfparams };
-  } catch (err) { console.log(err); throw err; }
+  return { invoicePdf, orderDetails, invNum };
 }
 
-async function _queryPayload(_payload) {
-  let _skus = _payload.items.map((item) => item.sku);
-  let _stock = (await qbo.findItems({ Sku: _skus })).QueryResponse.Item;
-  let _customer = (await qbo.findCustomers({ DisplayName: _payload.customer })).QueryResponse.Customer[0];
+async function filterQuery(payload, stock) {
+  const lineItems = [];
+  const pdfList = [];
 
-  console.log(`customer deets: ${_customer}`)
-  console.log(`order deets: ${_stock}`)
+  for (const item of payload.items) {
+    const stockItem = stock.find(s => s.Sku === item.sku);
 
-  return { _customer, _stock };
-}
+    if (!stockItem) {
+      // if item does not exist
+      pdfList.push({
+        name: item.name,
+        qty: item.quantity,
+        qtyAvailable: 'N/A'
+      });
+    }
 
-async function _filterQuery(_payload, _stock) {
-  const _line = [], _rej = [];
+    else {
+      pdfList.push({
+        name: stockItem.Name,
+        qty: item.quantity,
+        qtyAvailable: stockItem.QtyOnHand,
+        acceptedBool: stockItem.QtyOnHand > item.quantity ? true : false
+      });
 
-  _stock.forEach((element) => {
-    _payload.items.forEach((subElement) => {
-      if (subElement.sku === element.Sku) {
-        // check if there is enough quantity
-        if (element.QtyOnHand >= subElement.quantity) {
-          const lineBase = {
-            DetailType: 'SalesItemLineDetail',
-            Amount: element.UnitPrice * subElement.quantity,
-            SalesItemLineDetail: {
-              ItemRef: {
-                value: element.Id,
-                name: element.Name
-              },
-              Qty: subElement.quantity,
-              UnitPrice: element.UnitPrice,
-            },
-          };
-
-          _line.push(lineBase);
-        } else {
-          // product name, qty ordered
-          const product = {
-            name: element.Name,
-            qty: subElement.quantity,
-          };
-          _rej.push(product);
-        }
+      if (stockItem.QtyOnHand > item.quantity) {
+        const { Id, Name, UnitPrice } = stockItem;
+        const lineBase = {
+          DetailType: 'SalesItemLineDetail',
+          Amount: UnitPrice * item.quantity,
+          SalesItemLineDetail: {
+            ItemRef: { value: Id, name: Name },
+            Qty: item.quantity,
+            UnitPrice: UnitPrice,
+          }
+        };
+        // add the available items to the list for invoice processing
+        lineItems.push(lineBase);
       }
-    });
-  });
-
-  console.log(`filterQuery -- line: ${_line}`)
-  console.log(`filterQuery -- rejected: ${_rej}`)
-  return { _line, _rej };
-}
-
-async function _findLastInv() {
-  
-  let _lastInvRes = (await qbo.findInvoices([
-    { field: 'DocNumber', value: 'P23%', operator: 'LIKE', desc: 'DocNumber', },
-    { field: 'limit', value: 5 },
-  ])).QueryResponse.Invoice[0];
-
-  //console.log(_lastInvRes)
-  //let invNum = ((parseInt(_lastInvRes.DocNumber.split('-')[1], 10) + 1).toString()).padStart(5, '0');
-  let invNum = parseInt(_lastInvRes.DocNumber.split('-')[1], 10)
-
-  /*_lastInvRes = _lastInvRes.sort(function(a, b) {
-    let numA = parseInt(a.DocNumber.split('-')[1], 10)
-    let numB = parseInt(b.DocNumber.split('-')[1], 10)
-
-    if (numA > numB) return 1;
-    if (numB > numA) return -1;
-  }).reverse()[0]
-
-  console.log(_lastInvRes.DocNumber)*/
-
-  let fullInvNum, _query;
-  
-  do{
-    invNum += 1
-    fullInvNum = ''.concat('P', moment().format('YY').toString(), '-', invNum.toString().padStart(3, '0'))
-    console.log(`do-while--new invoice number: ${fullInvNum}`)
-    _query = await qbo.findInvoices([
-      { field: 'DocNumber', value: fullInvNum }
-    ])
-    console.log(_query)
+    }
   }
-  while( Object.entries(_query.QueryResponse).length !== 0 );
-  
 
-  //let currYear = moment().format('YYYY').toString()
-  //invNum = ''.concat('P', moment().format('YYYY').toString(), '-', invNum)
-  //invNum = ''.concat('P', moment().format('YYYY').toString(), '-', invNum.toString().padStart(5, '0'))
-  console.log(`after do-while--invoice string: ${fullInvNum}`)
+  console.log(pdfList);
+  console.log(lineItems);
 
-  return fullInvNum
+  return { lineItems, pdfList };
 }
 
-async function updateToken() {
+async function findNextInvoiceNumber() {
+  const lastInvoiceNumber = await findLastInvoiceNumber();
+  const prefix = `P${moment().format('YY')}-`;
+  let invNum = parseInt(lastInvoiceNumber.split('-')[1], 10) + 1;
+  let fullInvNum;
+
+  for (; ;) {
+    fullInvNum = `${prefix}${invNum.toString().padStart(3, '0')}`;
+    const queryResult = await quickBooks.findInvoices([{ field: 'DocNumber', value: fullInvNum }]);
+
+    if (Object.entries(queryResult.QueryResponse).length === 0) {
+      break;
+    }
+
+    invNum++;
+  }
+
+  return fullInvNum;
+}
+
+async function findLastInvoiceNumber() {
+  try {
+    const queryResult = await quickBooks.findInvoices([
+      { field: 'DocNumber', value: `P${moment().format('YY')}%`, operator: 'LIKE', desc: 'DocNumber', },
+      { field: 'limit', value: 5 },
+    ]);
+
+    let lastInvoiceNumber = `P${moment().format('YY')}-000`;
+    if (queryResult.QueryResponse.Invoice.length > 0) {
+      lastInvoiceNumber = queryResult.QueryResponse.Invoice[0].DocNumber
+    }
+
+    return lastInvoiceNumber;
+
+  } catch (err) { console.error(err); throw err; }
+}
+
+async function checkAccessToken() {
+  let refreshBool = false;
   const timeNow = new Date();
   const lastRefresh = process.env.QUICKBOOKS_LAST_REFRESH === '' ? new Date(timeNow - (60 * 1000 * 60)) : new Date(process.env.QUICKBOOKS_LAST_REFRESH);
   const timeDiff = (timeNow - lastRefresh) / (1000 * 60);
 
-  console.log('timeNow: ', timeNow, ', lastRefresh: ', lastRefresh.toISOString(), ', timeDiff: ', timeDiff);
+  console.log(`timeNow: ${timeNow}, lastRefresh: ${lastRefresh.toISOString()}, timeDiff: ${timeDiff}`);
 
-  if (timeDiff >= 55) {
-    try {
-      const refresh_response = await qbo.refreshAccessToken();
+  if (timeDiff >= 55) { await refreshAccessToken(); refreshBool = true };
 
-      const dateNow = new Date();
-      console.log("Access Token Refreshed at: ", dateNow.toString(), " / ", dateNow.getTime())
-      console.log("Refresh Response: ", refresh_response)
-
-      await heroku.patch(HEROKU_VARS_URL, {
-        body: {
-          QUICKBOOKS_ACCESS_TOKEN: refresh_response.access_token,
-          QUICKBOOKS_REFRESH_TOKEN: refresh_response.refresh_token,
-          QUICKBOOKS_LAST_REFRESH: dateNow,
-        },
-      });
-    } catch (err) { console.log('Error at app.get/update-token: ', err); }
-  } else console.log('token update not required');
+  return refreshBool;
 }
 
-export { qbo, processOrder, updateToken, _findLastInv };
+async function refreshAccessToken() {
+  try {
+    const refresh_response = await quickBooks.refreshAccessToken();
+    const dateNow = new Date();
+    console.log(`Access Token Refreshed at: ${dateNow.toString()}`)
+    console.log(`Refresh Response: ${refresh_response}`)
+
+    quickBooks.token = refresh_response.access_token
+    quickBooks.refreshToken = refresh_response.refresh_token
+
+    process.env.QUICKBOOKS_ACCESS_TOKEN = refresh_response.access_token
+    process.env.QUICKBOOKS_REFRESH_TOKEN = refresh_response.refresh_token
+    process.env.QUICKBOOKS_LAST_REFRESH = dateNow
+
+  } catch (err) { console.log('Error at method: quickbooks/refreshAccessToken(): ', err); }
+}
+
+
+export { processOrder, checkAccessToken };

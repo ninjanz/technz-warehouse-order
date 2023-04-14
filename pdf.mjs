@@ -1,6 +1,11 @@
 import PdfPrinter from 'pdfmake';
 
-const docFonts = {
+var FONTS = {
+    FiraSans: {
+        normal: 'fonts/FiraSans-Regular.ttf',
+        bold: 'fonts/FiraSans-Medium.ttf',
+        italics: 'fonts/FiraSans-Italic.ttf',
+    },
     Roboto: {
         normal: 'fonts/Roboto-Regular.ttf',
         bold: 'fonts/Roboto-Medium.ttf',
@@ -8,107 +13,142 @@ const docFonts = {
     },
 };
 
-const docStyles = {
-    header: {
-        font: 'Roboto',
-        bold: true,
-        decoration: 'underline',
-    },
-    title: {
-        fontSize: 20,
-        alignment: 'center',
-    },
-    subtitle: {
-        fontSize: 16,
-    },
-    text: {
-        fontSize: 12,
-    },
-    footer: {
-        fontSize: 10,
-        italics: true,
-        alignment: 'center'
-    }
-}
+const ORDER_TABLE_WIDTHS = ['5%', '50%', '15%', '15%', '15%'];
+const PAGE_HEADER_WIDTHS = ['60%', '20%', '20%'];
 
-async function invoiceTemplate(params) {
+const ORDER_TABLE_HEADER =
+    [
+        [
+            { text: 'No', style: 'orderTableHeader' },
+            { text: 'Product Name', style: 'orderTableHeader' },
+            { text: 'Order Quantity', style: 'orderTableHeader' },
+            { text: 'Quantity on Hand', style: 'orderTableHeader' },
+            { text: 'Accepted?', style: 'orderTableHeader' },
+        ],
+        ['', '', '', '', '',] // spacing for rowSpan = 2
+    ];
 
-    const template = [
-        {
-            text: 'NZ Curry House @ Plastic Supplies\n\n\n\n',
-            style: ['header', 'title'],
-        },
-        {
-            columns: [
-                {
-                    text: `Order for ${params.name}\n\n${params.address}\n\n`,
-                    style: ['header', 'text'],
-                    width: '30%'
-                }
-            ]
-        },
-        {
-            columns: [
-                {
-                    text: `Order #: ${params.number}`,
-                    alignment: 'left',
-                },
-                {
-                    text: `Order Date: ${params.date}\n\n`,
-                    alignment: 'right',
-                },
-            ],
-        },
-        {
-            text: 'Order List\n\n',
-        },
-        {
-            table: {
-                widths: ['5%', '60%', '20%', '15%'],
-                body: [
-                    ['No', 'Product Name', 'Order Quantity', 'Accepted'],
-                ],
-            },
-        },
-    ]
-
-    // ONLY IF THE LEN IS GREATER THAN 0
-    let x = 1
-    if (params.stock.length > 0) {
-        await params.stock.forEach((val) => {
-            template[4].table.body.push([x++, val.SalesItemLineDetail.ItemRef.name, val.SalesItemLineDetail.Qty, 'Y'])
-        })
-    }
-
-    if (params.nostock.length > 0) {
-        await params.nostock.forEach((val) => {
-            template[4].table.body.push([x++, val.name, val.qty, 'N'])
-        })
-    }
-
-    return template
+const TABLE_FOOTER = {
+    text: 'This is not an invoice. This is a computer generated document and does not require a signature',
+    style: 'footerStyle',
 };
 
-/*
-@params: params: object {name:String, address:String, number:String, date:String, tableContents:Array[{name: String, qty: Number, Yes: Boolean }]}*/
-async function createOrderPdf(params) {
-    const printer = new PdfPrinter(docFonts)
+async function createOrderTableBody(orderDetails) {
+    const fillCell = (idx, isAccepted) =>
+        idx % 2 === 0 ? (isAccepted ? '#EAFAF1' : '#F9EBEA') : isAccepted ? '#D5F5E3' : '#F2D7D5';
 
-    const docDefinition = {
-        content: await invoiceTemplate(params),
-        styles: docStyles,
-        footer: {
-            text: 'This is a computer generated document and does not require a signature',
-            style: 'footer'
-        },
+    const rows = [
+        ...orderDetails.map((item, idx) => [
+            { text: idx + 1, alignment: 'center', fillColor: fillCell(idx, item.acceptedBool) },
+            { text: item.name, fillColor: fillCell(idx, item.acceptedBool) },
+            { text: item.qty, alignment: 'center', fillColor: fillCell(idx, item.acceptedBool) },
+            { text: item.qtyAvailable, alignment: 'center', fillColor: fillCell(idx, item.acceptedBool) },
+            { text: item.acceptedBool ? 'Y' : 'N', alignment: 'center', fillColor: fillCell(idx, item.acceptedBool) },
+        ]),
+    ];
 
-    }
-
-    const doc = printer.createPdfKitDocument(docDefinition)
-    doc.end();
-
-    return doc
+    return [...ORDER_TABLE_HEADER, ...rows];
 }
 
+async function createOrderPdf(orderDetails) {
+    try {
+        const { name, address, number, date, pdfList } = orderDetails;
+        const printer = new PdfPrinter(FONTS);
+
+        const docDefinition = {
+            content: [
+                // Page Title
+                {
+                    text: `Purchase Order`,
+                    bold: true,
+                    fontSize: 20,
+                    alignment: 'center',
+                    lineHeight: 2,
+                },
+                // Invoice Header
+                {
+                    table: {
+                        widths: PAGE_HEADER_WIDTHS,
+                        body: [
+                            [
+                                { text: `Customer & Address:`, style: { bold: true } },
+                                { text: `Invoice #:`, style: { bold: true, alignment: 'right' } },
+                                { text: `${number}`, style: { alignment: 'left' } },
+                            ],
+                            [
+                                { text: `${name}`},
+                                { text: `Order Date:`, style: { bold: true, alignment: 'right' } },
+                                { text: `${date}`,style: { alignment: 'left' } }
+                            ],
+                            [
+                                { text: `${address}`, rowSpan: 3, style: { italics: true }  }, 
+                                { text: '' },
+                                { text: '' },
+                            ],
+                            // To provide spacing for RowSpan
+                            [{ text: '' }, { text: '' }, { text: '' }],
+                            [{ text: '' }, { text: '' }, { text: '' }],
+                        ]
+                    },
+                    layout: {
+                        // function to change line width of cells
+                        hLineWidth: function (i, node) {
+                            //if (i === node.table.body.length) return 2;
+                            return 0;
+                        },
+                        vLineWidth: function (i, node) {
+                            return 0;
+                        }
+                    },
+                },
+                // Spacing between page header and order list
+                {text: `\n`, lineHeight: 2},
+                // Order Details
+                {
+                    table: {
+                        widths: ORDER_TABLE_WIDTHS,
+                        headerRows: 1,
+                        body: await createOrderTableBody(pdfList),
+                    },
+                    layout: {
+                        // function to change line width of cells
+                        hLineWidth: function (i, node) {
+                            if (i === 0 || (i === 2) || i === node.table.body.length) return 2;
+                            if (i === 1) return 0;
+                            else return 0.5;
+                        },
+                        vLineWidth: function (i, node) {
+                            return 0;
+                        }
+                    },
+                },],
+            defaultStyle: {
+                font: 'FiraSans',
+                fontSize: 12,
+            },
+            styles: {
+                footerStyle: {
+                    fontSize: 10,
+                    italics: true,
+                    alignment: 'center',
+                },
+                orderTableHeader: {
+                    bold: true,
+                    rowSpan: 2,
+                    alignment: 'center',
+                },
+            },
+            footer: TABLE_FOOTER,
+        }
+
+        //console.log(`doc definition: ${JSON.stringify(docDefinition)}`);
+        const doc = printer.createPdfKitDocument(docDefinition);
+        doc.end();
+
+        return doc
+    } catch (err) { console.log(err); }
+}
+
+export { createOrderPdf };
 
 export { createOrderPdf }

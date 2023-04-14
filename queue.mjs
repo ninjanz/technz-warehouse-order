@@ -1,45 +1,65 @@
-/* eslint-disable linebreak-style */
-/* eslint-disable consistent-return */
-/* eslint-disable import/extensions */
-/* eslint-disable no-underscore-dangle */
-/* eslint-disable no-console */
-
 import Queue from 'bull';
+import Heroku from 'heroku-client';
 import moment from 'moment';
+import TelegramBot from 'node-telegram-bot-api';
+import { createOrderPdf } from './pdf.mjs';
+import { checkAccessToken, processOrder } from './quickbooks.mjs';
+const invoiceQueue = new Queue('Generate Invoice', process.env.REDIS_URL || 'redis://127.0.0.1:6379');
+const teleBot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN); // use polling if need to access messages
+//const CHICKEN_ORDER_BOT = '-400162180'
+const PLASTIC_ORDER_SHOPS = '-936671955' //test group
+//const PLASTIC_ORDER_SHOPS = '-487982914'
 
-import { processOrder, updateToken } from './quickbooks.mjs';
-import { bot, PLASTIC_ORDER_HQ, PLASTIC_ORDER_SHOPS } from './comms.mjs';
-import { createOrderPdf } from './pdf.mjs'
+invoiceQueue.process(async (job, done) => {
+  let tokenNeedsRefresh = await checkAccessToken()
 
-const REDIS_URL = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
-
-const invoiceQ = new Queue('Generate Invoice', REDIS_URL);
-invoiceQ.process(async (job) => {
   try {
     console.log(`Create Invoice - Job #${job.id} Received!`);
-    await updateToken();
+    let filename = `${moment(job.data.date).format('YYMMDD')}-${job.data.customer}`
 
-    let { invoice, pdfparams } = await processOrder(job.data);
-    //console.log(_order);
-    //let _sendEmail = await qbo.sendInvoicePdf(_inv.Id, STORE_EMAIL)
-    //let _pdf = await qbo.getInvoicePdf(_inv.Id);
-    //let _teleRes = await bot.sendDocument(CHAT_ID, _pdf)
+    // create the invoice and order pdf object
+    let { invoicePdf, orderDetails, invNum } = await processOrder(job.data);
+    let orderPdf = await createOrderPdf(orderDetails)
+    
+    //console.log(`pdf created!`);
+    // send the invoice and the order pdf
+    teleBot.sendDocument(PLASTIC_ORDER_SHOPS, orderPdf, {}, { filename: `${filename}.pdf` });
+    if (invoicePdf) {
+      teleBot.sendDocument(PLASTIC_ORDER_SHOPS, invoicePdf, {}, { filename: `${invNum}` })
+    } else {
+      teleBot.sendMessage(PLASTIC_ORDER_SHOPS, `No invoice generated. Maybe all the items ordered are out of stock...`);
+    }
 
-    let orderpdf = await createOrderPdf(pdfparams)
-    let filename = ''.concat(moment().format('YYMMDD').toString(), ' - ', invoice.CustomerRef.name)
-    bot.sendDocument(PLASTIC_ORDER_SHOPS, orderpdf, {}, {filename: `${filename}.pdf`})
-    bot.sendDocument(PLASTIC_ORDER_HQ, orderpdf, {}, {filename: `${filename}.pdf`})
+    done(null, {});
 
-    const _logMessage = ''.concat(`Invoice ${invoice.DocNumber} generated for ${invoice.CustomerRef.name} on ${invoice.TxnDate}`,
-    `. Invoice PDF has been sent via email to ${invoice.BillEmail.Address}.`)
+  } catch (error) {
+    console.log(`Error - ${error}`);
+    done(error);
 
-    return _logMessage;
-  } catch (err) { console.log(err); bot.sendMessage(PLASTIC_ORDER_HQ, `Error: ${err}`); }
+  } finally {
+    if (tokenNeedsRefresh) {
+      const heroku = new Heroku({ token: process.env.HEROKU_API_TOKEN });
+
+      heroku.patch(process.env.HEROKU_VARS_URL, {
+        body: {
+          QUICKBOOKS_ACCESS_TOKEN: process.env.QUICKBOOKS_ACCESS_TOKEN,
+          QUICKBOOKS_REFRESH_TOKEN: process.env.QUICKBOOKS_REFRESH_TOKEN,
+          QUICKBOOKS_LAST_REFRESH: process.env.QUICKBOOKS_LAST_REFRESH,
+        },
+      }).then(() => { console.log('Sucessfully updated access_token on heroku...') });
+    }
+  }
 });
 
-invoiceQ.on('completed', (jobId, message) => {
-  console.log(message);
-  bot.sendMessage(PLASTIC_ORDER_HQ, message);
+invoiceQueue.on('completed', (job, result) => {
+  console.log(`Job ${job.id} completed successfully!`);
+  teleBot.sendMessage(PLASTIC_ORDER_SHOPS, `Job ${job.id} completed successfully!`);
 });
 
-export { invoiceQ };
+invoiceQueue.on('failed', (job, error) => {
+  console.log(error);
+  teleBot.sendMessage(PLASTIC_ORDER_SHOPS, `${job.id} - ${error}`);
+});
+
+export { invoiceQueue };
+
