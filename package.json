@@ -13,7 +13,7 @@
     "node-quickbooks-promise": "^1.0.5",
     "node-telegram-bot-api": "^0.50.0",
     "pdfkit": "^0.11.0",
-    "pdfmake": "^0.1.68"
+    "pdfmake": "^0.1.72"
   },
   "devDependencies": {
     "@types/bull": "^4.10.0",

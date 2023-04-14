@@ -138,7 +138,7 @@ async function createOrderPdf(orderDetails) {
         const doc = printer.createPdfKitDocument(docDefinition);
         doc.end();
 
-        return doc.getDataUrl();
+        return doc
     } catch (err) { console.log(err); }
 }
 

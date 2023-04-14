@@ -21,7 +21,7 @@ invoiceQueue.process(async (job, done) => {
     let { invoicePdf, orderDetails, invNum } = await processOrder(job.data);
     let orderPdf = await createOrderPdf(orderDetails)
     console.log(`pdf created!`);
-    //await teleBot.sendDocument(PLASTIC_ORDER_SHOPS, orderPdf, {}, { filename: `${filename}.pdf` })
+    await teleBot.sendDocument(PLASTIC_ORDER_SHOPS, orderPdf, {}, { filename: `${filename}.pdf` });
 
 
     done(null, { tokenNeedsRefresh, filename, invNum, orderPdf, invoicePdf });
@@ -38,7 +38,7 @@ invoiceQueue.on('completed', (job, result) => {
   teleBot.sendMessage(PLASTIC_ORDER_HQ, `Job ${job.id} completed successfully!`);
   
   // send the invoice and order pdf object to telegram
-  teleBot.sendDocument(PLASTIC_ORDER_SHOPS, result.orderPdf, {}, { filename: `${result.filename}.pdf` })
+  //teleBot.sendDocument(PLASTIC_ORDER_SHOPS, result.orderPdf, {}, { filename: `${result.filename}.pdf` })
   if (result.invoicePdf) {
     teleBot.sendDocument(PLASTIC_ORDER_SHOPS, result.invoicePdf, {}, { filename: `${result.invNum}.pdf` })
   } else {teleBot.sendMessage(PLASTIC_ORDER_HQ, `No invoice generated. Maybe all the items ordered are out of stock...`);}
