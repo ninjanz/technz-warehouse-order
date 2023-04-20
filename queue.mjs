@@ -21,7 +21,6 @@ invoiceQueue.process(async (job, done) => {
     let { invoicePdf, orderDetails, invNum } = await processOrder(job.data);
     let orderPdf = await createOrderPdf(orderDetails)
     
-    //console.log(`pdf created!`);
     // send the invoice and the order pdf
     teleBot.sendDocument(PLASTIC_ORDER_SHOPS, orderPdf, {}, { filename: `${filename}.pdf` });
     if (invoicePdf) {
