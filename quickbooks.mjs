@@ -148,6 +148,9 @@ async function findLastInvoiceNumber() {
     if (queryResult.QueryResponse.Invoice.length > 0) {
       lastInvoiceNumber = queryResult.QueryResponse.Invoice[0].DocNumber
     }
+    else {
+      lastInvoiceNumber = 0;
+    }
 
     return lastInvoiceNumber;
 
