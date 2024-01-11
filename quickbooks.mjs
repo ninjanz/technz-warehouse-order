@@ -145,7 +145,7 @@ async function findLastInvoiceNumber() {
     ]);
 
     let lastInvoiceNumber = `P${moment().format('YY')}-000`;
-    if (queryResult.QueryResponse.Invoice.length) {
+    if (queryResult.QueryResponse.Invoice.length != undefined) {
       lastInvoiceNumber = queryResult.QueryResponse.Invoice[0].DocNumber
     }
 
