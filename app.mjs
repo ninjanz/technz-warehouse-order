@@ -27,6 +27,13 @@ app.post('/create-invoice', async(req, res) => {
   res.status(200).send(`Request Received! Job ID: ${job.id}`);
 })
 
+app.post('/create-chicken-bill', async(req, res) => {
+  //console.log(req.body);
+  let job = await invoiceQueue.add(req.body)
+  //console.log(job);
+  res.status(200).send(`Request Received! Job ID: ${job.id}`);
+})
+
 // Allows the client to query the state of a background job
 app.get('/job/:id', async (req, res) => {
   let id = req.params.id;
