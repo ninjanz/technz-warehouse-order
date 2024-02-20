@@ -4,8 +4,8 @@ import moment from 'moment';
 import TelegramBot from 'node-telegram-bot-api';
 import { createOrderPdf } from './pdf.mjs';
 import { checkAccessToken, processOrder } from './quickbooks.mjs';
-const invoiceQueue = new Queue('Generate Invoice', process.env.REDIS_URL || 'redis://127.0.0.1:6379');
-const billQueue = new Queue('Generate Bill', process.env.REDIS_URL || 'redis://127.0.0.1:6379');
+const invoiceQueue = new Queue('Generate Invoice', process.env.REDIS_URL || 'redis://default:ikDevokYr8elQFnruiZzSaCtYzDBrxCL@redis-16191.c77.eu-west-1-1.ec2.cloud.redislabs.com:16191');
+const billQueue = new Queue('Generate Bill', process.env.REDIS_URL || 'redis://default:ikDevokYr8elQFnruiZzSaCtYzDBrxCL@redis-16191.c77.eu-west-1-1.ec2.cloud.redislabs.com:16191');
 const teleBot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN); // use polling if need to access messages
 //const CHICKEN_ORDER_BOT = '-400162180'
 //const PLASTIC_ORDER_SHOPS = '-936671955' //test group
