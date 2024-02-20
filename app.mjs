@@ -46,7 +46,7 @@ app.post('/chicken-purchase-order', async (req, res) => {
           contentType: 'application/pdf',
       };
 
-      teleBot.sendDocument('-936671955', pdf, {}, pdfOptions).then(() => {
+      teleBot.sendDocument('-400162180', pdf, {}, pdfOptions).then(() => {
           res.status(200).send('Request Received!');
       }).catch((err) => {
           console.error('Error sending document to Telegram:', err);
