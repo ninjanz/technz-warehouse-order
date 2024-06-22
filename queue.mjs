@@ -9,7 +9,8 @@ const billQueue = new Queue('Generate Bill', process.env.REDIS_URL || 'redis://d
 const teleBot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN); // use polling if need to access messages
 //const CHICKEN_ORDER_BOT = '-400162180'
 //const PLASTIC_ORDER_SHOPS = '-936671955' //test group
-const PLASTIC_ORDER_SHOPS = '-487982914' // prod group
+//const PLASTIC_ORDER_SHOPS_OLD = '-487982914' // prod group
+const PLASTIC_ORDER_SHOPS = '-1002085439219' // prod group
 
 invoiceQueue.process(async (job, done) => {
   let tokenNeedsRefresh = await checkAccessToken()
